@@ -112,6 +112,7 @@ const toBase64 = (url) =>
           reader.readAsDataURL(blob);
         }),
     );
+const printWindow = window.open("", "_blank");
 
 /* ── build print HTML (images passed as full data-URLs) ── */
 const buildPrintHTML = (data) => {
@@ -256,7 +257,7 @@ const buildPrintHTML = (data) => {
       </div>
       <div style="text-align:center;">
         ${sigB64 ? `<img src="${sigB64}" style="width:130px;height:65px;object-fit:contain;" />` : ""}
-        <div style="border-top:1px solid #ccc;width:150px;padding-top:4px;font-size:10px;color:#888;margin-top:4px;">For AMARAA JEWELRY</div>
+        <div style="border-top:1px solid #ccc;width:150px;padding-top:4px;font-size:10px;color:#888;margin-top:4px;">AMARAA JEWELRY</div>
       </div>
     </div>
   </div>
@@ -265,7 +266,7 @@ const buildPrintHTML = (data) => {
   <div style="background:#EEF1FA;padding:16px 28px;border-top:1px solid #C5CDE8;display:grid;grid-template-columns:1fr 1fr;gap:16px;font-size:11px;color:#555;">
     <div>
       <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#2B3A7A;margin-bottom:4px;">Contact</div>
-      Tel: +971 543969425 / +971 521866038<br>WhatsApp: +32488401207<br>info@amaraa.com · www.amaraa.com
+      Tel: +971 543969425 / +971 521866038<br>WhatsApp: +971 54 396 9425<br>info@amaraa.com · www.amaraa.com
     </div>
     <div>
       <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#2B3A7A;margin-bottom:4px;">Registered Address</div>
@@ -746,7 +747,7 @@ export default function AmaraaInvoiceGenerator() {
         <div className="flex items-center justify-between mb-5">
           <button
             onClick={() => setShowInvoice(false)}
-            className="flex items-center gap-2 text-sm text-white/80 hover:text-white border border-white/20 hover:border-white/50 px-4 py-2 rounded-lg transition-all bg-white/10 backdrop-blur"
+            className="flex items-center gap-2 text-sm text-blue-700 hover:text-blue-800 border-white/20 hover:border-white/50 px-4 py-2 rounded-lg transition-all bg-white/10 backdrop-blur cursor-pointer "
           >
             ← Back to Form
           </button>
@@ -983,7 +984,7 @@ export default function AmaraaInvoiceGenerator() {
               </div>
               Tel: +971 543969425 / +971 521866038
               <br />
-              WhatsApp: +32488401207
+              WhatsApp: +971 54 396 9425
               <br />
               info@amaraa.com · www.amaraa.com
             </div>
@@ -991,9 +992,8 @@ export default function AmaraaInvoiceGenerator() {
               <div className="text-[9px] tracking-[1.5px] uppercase text-blue-700 mb-1">
                 Registered Address
               </div>
-              Almas Tower, Plot No JLT-PH1-A0
-              <br />
-              Jumeirah Lake Towers, Dubai, UAE
+              Jumeirah Lake Towers, Dubai, UAE <br /> Almas Tower, Plot No
+              JLT-PH1-A0
               <br />
               License: DMCC-896920
             </div>
