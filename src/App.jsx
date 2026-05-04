@@ -165,17 +165,34 @@ const buildPrintHTML = (data) => {
 <div style="border:1px solid #C5CDE8;border-radius:12px;overflow:hidden;max-width:900px;margin:auto;">
 
   <!-- HEADER -->
-  <div style="background:#0D1B4B;color:#fff;padding:24px 28px;display:flex;justify-content:space-between;align-items:center;">
-    <div>
-      ${logoB64 ? `<img src="${logoB64}" style="height:70px;object-fit:contain;filter:brightness(0) invert(1);" />` : `<div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:600;letter-spacing:3px;">AMARAA<br><span style="font-size:10px;letter-spacing:5px;opacity:0.6;">JEWELRY</span></div>`}
+  <div style="background:#0D1B4B;color:#ffffff;padding:24px 28px;display:flex;justify-content:space-between;align-items:center;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
+  
+  <div>
+    ${
+      logoB64
+        ? `<img src="${logoB64}" 
+                style="height:70px;object-fit:contain;
+                       filter: brightness(0) invert(1);
+                       -webkit-filter: brightness(0) invert(1);" />`
+        : `<div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:600;letter-spacing:3px;color:#ffffff;">
+            AMARAA<br>
+            <span style="font-size:10px;letter-spacing:5px;opacity:0.7;color:#ffffff;">JEWELRY</span>
+           </div>`
+    }
+  </div>
+
+  <div style="text-align:right;font-size:12px;opacity:0.9;color:#ffffff;">
+    <div style="font-family:'Cormorant Garamond',serif;font-size:18px;letter-spacing:2px;color:#A8B8E8;font-weight:600;">
+      ${invType.toUpperCase()}
     </div>
-    <div style="text-align:right;font-size:12px;opacity:0.85;">
-      <div style="font-family:'Cormorant Garamond',serif;font-size:18px;letter-spacing:2px;color:#A8B8E8;font-weight:600;">${invType.toUpperCase()}</div>
-      <div>No. ${invNo}</div>
-      <div>Date: ${formatDate(invDate)}</div>
-      <div style="margin-top:4px;font-size:10px;opacity:0.7;">TRN: ${trn}</div>
+    <div>No. ${invNo}</div>
+    <div>Date: ${formatDate(invDate)}</div>
+    <div style="margin-top:4px;font-size:10px;opacity:0.7;">
+      TRN: ${trn}
     </div>
   </div>
+
+</div>
 
   <!-- ACCENT BAR -->
   <div style="height:3px;background:linear-gradient(90deg,#2B3A7A,#A8B8E8,#2B3A7A);"></div>
@@ -719,13 +736,7 @@ export default function AmaraaInvoiceGenerator() {
 
   /* ── INVOICE PREVIEW ── */
   return (
-    <div
-      className="min-h-screen font-sans"
-      style={{
-        background:
-          "linear-gradient(135deg,#0D1B4B 0%,#1a2d6b 40%,#0f2255 100%)",
-      }}
-    >
+    <div className="min-h-screen font-sans bg-[#d4d4d4]">
       <link
         href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap"
         rel="stylesheet"
@@ -958,7 +969,7 @@ export default function AmaraaInvoiceGenerator() {
                   />
                 )}
                 <div className="border-t border-gray-200 w-36 pt-1 text-[10px] text-gray-400 text-center">
-                  For AMARAA JEWELRY
+                  AMARAA JEWELRY
                 </div>
               </div>
             </div>
