@@ -308,7 +308,7 @@ const buildPrintHTML = (data) => {
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   body{font-family:'DM Sans',sans-serif;background:#fff;padding:20px;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-  @media print{body{padding:0;}@page{margin:10mm;}}
+@media print{body{padding:10mm;}@page{margin:0;size:A4;}}
   
   /* High-performance hardware filters to force white inversion on mobile layouts */
   .mobile-white-logo {
@@ -438,8 +438,13 @@ const buildPrintHTML = (data) => {
     </div>
   </div>
 </div>
-<script>window.onload=()=>setTimeout(()=>window.print(),800);</script>
-</body></html>`;
+<script>
+window.onload = () => {
+  setTimeout(() => {
+    window.print();
+  }, 800);
+};
+</script></body></html>`;
 };
 
 /* ── UI primitives with navy color scheme ── */
@@ -561,7 +566,7 @@ export default function AmaraaInvoiceGenerator() {
       stampB64,
       sigB64, // ← pass base64 images
     });
-    const w = window.open("", "_blank");
+    const w = window.open("", "_blank", "width=900,height=700");
     w.document.write(html);
     w.document.close();
   }, [
@@ -1122,6 +1127,32 @@ export default function AmaraaInvoiceGenerator() {
                   <span>Remaining</span>
                   <span>{fmt(remainingAmount)}</span>
                 </div>
+              </div>
+            </div>
+
+            <div className="mt-6 p-4 bg-blue-50 rounded-xl border border-blue-100">
+              <div className="text-[9px] tracking-[2px] uppercase text-blue-700 mb-3 font-semibold">
+                Bank Details
+              </div>
+              <div className="grid grid-cols-2 gap-x-6 gap-y-3 text-xs">
+                {[
+                  ["Bank Name", "National Bank of Ras Al-Khaimah"],
+                  ["Account Name", "AMARAA FZCO"],
+                  ["Account Number", "0333479509001"],
+                  ["SWIFT Code", "NRAKAEAK"],
+                  ["IBAN", "AE25 0400 0003 3347 9509 001"],
+                  ["Currency", "AED"],
+                  ["Payment Code", "GDS"],
+                  [
+                    "Purpose of Payment",
+                    "Payment received against invoice No.",
+                  ],
+                ].map(([label, val]) => (
+                  <div key={label}>
+                    <div className="text-gray-400 text-[10px]">{label}</div>
+                    <div className="font-medium text-[#0D1B4B]">{val}</div>
+                  </div>
+                ))}
               </div>
             </div>
 
