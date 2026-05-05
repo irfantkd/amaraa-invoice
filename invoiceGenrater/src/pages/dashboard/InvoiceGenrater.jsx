@@ -2971,15 +2971,12 @@ const toBase64 = (url) =>
     );
 
 /* ══════════════════════════════════════════════════════════════
-   BUILD PRINT HTML WITH PROPER WIDTH AND CENTERING
-══════════════════════════════════════════════════════════════ */
-/* ══════════════════════════════════════════════════════════════
-   BUILD PRINT HTML WITH CONDITIONAL PAGINATION
-   - Only creates pages when items actually require them
-   - No empty "continued" pages
-══════════════════════════════════════════════════════════════ */
-/* ══════════════════════════════════════════════════════════════
-   BUILD PRINT HTML - ONLY CREATE PAGES WITH ACTUAL CONTENT
+   BUILD PRINT HTML
+   Key fixes:
+   1. .page has NO min-height — grows with content, no blank gaps
+   2. Page breaks via @media print page-break-after on .page
+   3. Footer/totals only on last page — no repeated footer
+   4. All images passed as base64 data URIs — always print correctly
 ══════════════════════════════════════════════════════════════ */
 const buildPrintHTML = ({
   invNo,
@@ -3004,38 +3001,15 @@ const buildPrintHTML = ({
   stampB64,
   sigB64,
 }) => {
-  /* ── DYNAMIC PAGINATION - ONLY CREATE PAGES WITH ITEMS ── */
-  const FIRST_PAGE_MAX_ITEMS = 10;
-  const NEXT_PAGES_MAX_ITEMS = 18;
-
-  // Calculate pages - only create pages that have items
-  let pages = [];
-
-  if (items.length === 0) {
-    // If no items, create one page with empty state
-    pages = [[]];
-  } else if (items.length <= FIRST_PAGE_MAX_ITEMS) {
-    // All items fit on first page
-    pages = [items];
-  } else {
-    // First page with up to FIRST_PAGE_MAX_ITEMS items
-    pages.push(items.slice(0, FIRST_PAGE_MAX_ITEMS));
-
-    // Remaining items
-    let remainingItems = items.slice(FIRST_PAGE_MAX_ITEMS);
-
-    // Only add subsequent pages if there are remaining items
-    while (remainingItems.length > 0) {
-      const pageItems = remainingItems.slice(0, NEXT_PAGES_MAX_ITEMS);
-      if (pageItems.length > 0) {
-        pages.push(pageItems);
-      }
-      remainingItems = remainingItems.slice(NEXT_PAGES_MAX_ITEMS);
-    }
+  /* ── pagination ── */
+  const FIRST_PAGE_ROWS = 10;
+  const NEXT_PAGE_ROWS = 18;
+  const pages = [items.slice(0, FIRST_PAGE_ROWS)];
+  let off = FIRST_PAGE_ROWS;
+  while (off < items.length) {
+    pages.push(items.slice(off, off + NEXT_PAGE_ROWS));
+    off += NEXT_PAGE_ROWS;
   }
-
-  // Debug: log pages info
-  console.log(`Total items: ${items.length}, Pages created: ${pages.length}`);
 
   const fmtLocal = (n) =>
     "AED " +
@@ -3055,11 +3029,12 @@ const buildPrintHTML = ({
     ["Purpose of Payment", `Payment received against invoice No. ${invNo}`],
   ];
 
+  /* ── reusable blocks ── */
   const logoBlock = logoB64
     ? `<img src="${logoB64}" style="height:52px;object-fit:contain;filter:brightness(0) invert(1);-webkit-filter:brightness(0) invert(1);" alt="Amaraa"/>`
     : `<span style="font-family:'Cormorant Garamond',Georgia,serif;font-size:22px;font-weight:700;letter-spacing:4px;color:#fff;">AMARAA <span style="font-size:9px;letter-spacing:5px;opacity:.6;">JEWELRY</span></span>`;
 
-  const header = (label, pageNum, totalPages) => `
+  const header = (label) => `
     <div style="background:#0D1B4B;padding:18px 28px;display:flex;justify-content:space-between;align-items:center;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
       ${logoBlock}
       <div style="text-align:right;font-size:11px;color:rgba(255,255,255,.82);">
@@ -3074,38 +3049,37 @@ const buildPrintHTML = ({
   const tableHead = () => `
     <thead>
       <tr style="background:#EEF1FA;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
-        <th style="font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:#2B3A7A;padding:7px 8px;font-weight:600;text-align:left;width:6%;">Sl.</th>
-        <th style="font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:#2B3A7A;padding:7px 8px;font-weight:600;text-align:left;width:30%;">Item Name / Code</th>
-        <th style="font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:#2B3A7A;padding:7px 8px;font-weight:600;text-align:left;width:8%;">Qty</th>
-        <th style="font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:#2B3A7A;padding:7px 8px;font-weight:600;text-align:left;width:12%;">GWT</th>
-        <th style="font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:#2B3A7A;padding:7px 8px;font-weight:600;text-align:left;width:12%;">Cts/Size</th>
-        <th style="font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:#2B3A7A;padding:7px 8px;font-weight:600;text-align:left;width:14%;">Unit Price</th>
-        <th style="font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:#2B3A7A;padding:7px 8px;font-weight:600;text-align:left;width:18%;">Amount (AED)</th>
+        <th style="font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:#2B3A7A;padding:7px 10px;font-weight:600;text-align:left;">Sl.</th>
+        <th style="font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:#2B3A7A;padding:7px 10px;font-weight:600;text-align:left;">Item Name / Code</th>
+        <th style="font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:#2B3A7A;padding:7px 10px;font-weight:600;text-align:right;">Qty</th>
+        <th style="font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:#2B3A7A;padding:7px 10px;font-weight:600;text-align:right;">GWT</th>
+        <th style="font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:#2B3A7A;padding:7px 10px;font-weight:600;text-align:right;">Cts/Size</th>
+        <th style="font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:#2B3A7A;padding:7px 10px;font-weight:600;text-align:right;">Unit Price</th>
+        <th style="font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:#2B3A7A;padding:7px 10px;font-weight:600;text-align:right;">Amount (AED)</th>
       </tr>
     </thead>`;
 
   const tdStyle =
-    "padding:6px 8px;border-bottom:1px solid #E8ECF5;font-size:11px;vertical-align:top;";
-
+    "padding:6px 10px;border-bottom:1px solid #E8ECF5;font-size:11px;vertical-align:top;";
   const renderRows = (chunk, startIdx) =>
     chunk
       .map(
         (it, i) => `
-        <tr>
-          <td style="${tdStyle}text-align:left;color:#aaa;">${startIdx + i + 1}</td>
-          <td style="${tdStyle}text-align:left;font-weight:600;color:#0D1B4B;">${it.itemCode || "—"}</td>
-          <td style="${tdStyle}text-align:left;">${it.qty}</td>
-          <td style="${tdStyle}text-align:left;">${it.GWT || "—"}</td>
-          <td style="${tdStyle}text-align:left;">${it.cts || "—"}</td>
-          <td style="${tdStyle}text-align:left;">${it.price ? "AED " + Number(it.price).toFixed(2) : "—"}</td>
-          <td style="${tdStyle}text-align:left;font-weight:600;color:#0D1B4B;">${it.price ? "AED " + (it.qty * Number(it.price)).toFixed(2) : "—"}</td>
-        </tr>`,
+      <tr>
+        <td style="${tdStyle}text-align:left;color:#aaa;">${startIdx + i + 1}</td>
+        <td style="${tdStyle}text-align:left;font-weight:600;color:#0D1B4B;">${it.itemCode || "—"}</td>
+        <td style="${tdStyle}text-align:right;">${it.qty}</td>
+        <td style="${tdStyle}text-align:right;">${it.GWT || "—"}</td>
+        <td style="${tdStyle}text-align:right;">${it.cts || "—"}</td>
+        <td style="${tdStyle}text-align:right;">${it.price ? "AED " + Number(it.price).toFixed(2) : "—"}</td>
+        <td style="${tdStyle}text-align:right;font-weight:600;color:#0D1B4B;">${it.price ? "AED " + (it.qty * Number(it.price)).toFixed(2) : "—"}</td>
+      </tr>`,
       )
       .join("");
 
   const totalsBlock = () => `
     <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:20px;margin-top:18px;flex-wrap:wrap;">
-      <div style="flex:1;min-width:250px;">
+      <div style="flex:1;min-width:260px;">
         <div style="font-size:8px;letter-spacing:2px;text-transform:uppercase;color:#2B3A7A;margin-bottom:4px;">Amount in Words</div>
         <div style="background:#EEF1FA;border-radius:6px;padding:8px 12px;font-style:italic;font-size:11px;color:#0D1B4B;margin-bottom:10px;-webkit-print-color-adjust:exact;print-color-adjust:exact;">${grandToWords(grand)}</div>
         ${notes ? `<div style="font-size:10px;font-style:italic;color:#c00;margin-bottom:10px;">${notes}</div>` : ""}
@@ -3162,36 +3136,22 @@ const buildPrintHTML = ({
       </div>
     </div>`;
 
-  // Only create pages that actually have items
+  /* ── assemble pages ── */
   const pagesHTML = pages
-    .filter(
-      (page) => page.length > 0 || (page.length === 0 && pages.length === 1),
-    ) // Filter out empty pages unless it's the only page
-    .map((chunk, pageIndex) => {
-      const isFirst = pageIndex === 0;
-      const isLast = pageIndex === pages.length - 1;
-
-      // Calculate starting serial number correctly
-      let startIdx = 0;
-      if (pageIndex === 0) {
-        startIdx = 0;
-      } else {
-        startIdx =
-          FIRST_PAGE_MAX_ITEMS + (pageIndex - 1) * NEXT_PAGES_MAX_ITEMS;
-      }
-
-      // Only show "Continued" label if there are actually multiple pages
+    .map((chunk, pi) => {
+      const isFirst = pi === 0;
+      const isLast = pi === pages.length - 1;
+      const startIdx = isFirst
+        ? 0
+        : FIRST_PAGE_ROWS + (pi - 1) * NEXT_PAGE_ROWS;
       const label =
-        pages.length > 1 && !isFirst
-          ? `${invType.toUpperCase()} (Continued)`
+        pages.length > 1
+          ? `${invType.toUpperCase()}${isFirst ? "" : " (Continued)"}`
           : invType.toUpperCase();
 
-      // Only show "Continued on next page" if this is NOT the last page AND there are more pages
-      const showContinued = !isLast && pages.length > 1;
-
       return `
-<div class="page" style="page-break-after: ${isLast ? "auto" : "always"}; break-after: ${isLast ? "auto" : "page"};">
-  ${header(label, pageIndex + 1, pages.length)}
+<div class="page">
+  ${header(label)}
   <div style="padding:18px 28px 20px;">
     ${
       isFirst
@@ -3216,176 +3176,90 @@ const buildPrintHTML = ({
     `
         : ""
     }
-    <table style="width:100%;border-collapse:collapse;margin-bottom:4px;table-layout:fixed;">
+    <table style="width:100%;border-collapse:collapse;margin-bottom:4px;">
       ${tableHead()}
-      <tbody>${chunk.length > 0 ? renderRows(chunk, startIdx) : `<tr><td colspan="7" style="padding:40px;text-align:center;color:#999;">No items to display</td></tr>`}</tbody>
+      <tbody>${renderRows(chunk, startIdx)}</tbody>
     </table>
-    ${showContinued ? `<div style="text-align:center;font-size:10px;color:#bbb;font-style:italic;padding:10px 0 2px;">*** Continued on next page ***</div>` : ""}
+    ${!isLast ? `<div style="text-align:center;font-size:10px;color:#bbb;font-style:italic;padding:10px 0 2px;">*** Continued on next page ***</div>` : ""}
     ${isLast ? totalsBlock() : ""}
   </div>
   ${isLast ? footerBlock() : ""}
 </div>`;
     })
-    .join("");
+    .join(
+      "",
+    ); /* NO separator div between pages — @media print handles breaks */
 
   return `<!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no"/>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
 <title>Amaraa Invoice ${invNo}</title>
 <style>
-  * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{
+    font-family:'DM Sans',Arial,sans-serif;
+    font-size:12px;color:#333;
+    background:#fff;
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact;
   }
-  
-  body {
-    font-family: 'DM Sans', Arial, sans-serif;
-    font-size: 12px;
-    color: #333;
-    background: #fff;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
+
+  /*
+   * CRITICAL FIX: .page must NOT have min-height or height.
+   * It grows naturally with its content.
+   * Page breaks are handled purely by @media print rules below.
+   */
+  .page{
+    width:210mm;
+    margin:0 auto;
+    background:#fff;
+    display:flex;
+    flex-direction:column;
   }
-  
-  .print-container {
-    width: 100%;
-    max-width: 210mm;
-    margin: 0 auto;
-    background: #fff;
-  }
-  
-  .page {
-    width: 100%;
-    max-width: 210mm;
-    min-height: 297mm;
-    margin: 0 auto;
-    background: #fff;
-    position: relative;
-    page-break-after: always;
-    break-after: page;
-    box-sizing: border-box;
-    overflow-x: hidden;
-  }
-  
-  .page:last-child {
-    page-break-after: auto;
-    break-after: auto;
-  }
-  
-  .page > div {
-    max-width: 100%;
-    overflow-x: hidden;
-  }
-  
-  table {
-    width: 100%;
-    word-wrap: break-word;
-    table-layout: fixed;
-  }
-  
-  td, th {
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-  }
-  
-  @media print {
-    body {
-      margin: 0;
-      padding: 0;
-      background: #fff;
-      width: 100%;
+
+  /* Print page breaks */
+  @media print{
+    html,body{width:210mm;margin:0;padding:0;background:#fff;}
+    @page{size:A4 portrait;margin:0;}
+    .page{
+      page-break-after:always;
+      break-after:page;
+      border:none;
     }
-    
-    .print-container {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      max-width: 100%;
+    .page:last-of-type{
+      page-break-after:avoid;
+      break-after:avoid;
     }
-    
-    .page {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      max-width: 100%;
-      page-break-after: always;
-      break-after: page;
-      box-shadow: none;
-    }
-    
-    .page:last-child {
-      page-break-after: auto;
-      break-after: auto;
-    }
-    
-    * {
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-    }
-    
-    /* Hide URL, date, time, page numbers in print */
-    @page {
-      margin: 0;
-      size: A4;
-    }
-    
-    /* Remove default print headers and footers */
-    @page :header {
-      display: none;
-    }
-    
-    @page :footer {
-      display: none;
+    /* Force background colors to print */
+    *{
+      -webkit-print-color-adjust:exact !important;
+      print-color-adjust:exact !important;
     }
   }
-  
-  @media screen {
-    body {
-      background: #e0e0e0;
-      padding: 20px;
-    }
-    
-    .print-container {
-      box-shadow: 0 0 20px rgba(0,0,0,0.2);
-    }
-    
-    .page {
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      margin-bottom: 20px;
+
+  /* Screen preview */
+  @media screen{
+    body{padding:20px;background:#d4d4d4;}
+    .page{
+      border:1px solid #C5CDE8;
+      box-shadow:0 4px 24px rgba(0,0,0,.12);
+      margin-bottom:32px;
     }
   }
 </style>
 </head>
 <body>
-<div class="print-container">
 ${pagesHTML}
-</div>
 <script>
-  (function() {
-    setTimeout(function() {
-      window.print();
-      var isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-      if (!isSafari) {
-        setTimeout(function() {
-          window.close();
-        }, 1000);
-      }
-    }, 500);
-  })();
-</script>
+  window.onload = function(){ setTimeout(function(){ window.print(); }, 900); };
+<\/script>
 </body>
 </html>`;
 };
 
-/* ── UI primitives ── */
+/* ── UI primitives — UNCHANGED ── */
 const Label = ({ children }) => (
   <label className="block text-[11px] tracking-wider text-blue-800 mb-1 uppercase font-medium">
     {children}
@@ -3477,62 +3351,41 @@ export default function AmaraaInvoiceGenerator() {
     setShowInvoice(false);
   };
 
-  /* ── PDF generation using native print (preserves design perfectly) ── */
+  /* ── PDF via new window (most reliable cross-browser) ── */
   const downloadPDF = useCallback(() => {
     if (downloading) return;
     setDownloading(true);
-
-    try {
-      const html = buildPrintHTML({
-        invNo,
-        invDate,
-        invType,
-        trn,
-        custName,
-        custAddr,
-        custTrn,
-        custPhone,
-        custEmail,
-        items,
-        vatPct,
-        discount,
-        subtotal,
-        vat,
-        grand,
-        notes,
-        paidAmount,
-        remainingAmount,
-        logoB64,
-        stampB64,
-        sigB64,
-      });
-
-      // Create a new window for printing
-      const printWindow = window.open(
-        "",
-        "_blank",
-        "width=800,height=600,toolbar=yes,menubar=yes",
-      );
-      if (!printWindow) {
-        alert(
-          "Please allow popups to generate PDF. Check your browser settings.",
-        );
-        setDownloading(false);
-        return;
-      }
-
-      printWindow.document.write(html);
-      printWindow.document.close();
-
-      // Clean up
-      setTimeout(() => {
-        setDownloading(false);
-      }, 3000);
-    } catch (error) {
-      console.error("PDF generation failed:", error);
-      alert("Failed to generate PDF. Please try again.");
+    const html = buildPrintHTML({
+      invNo,
+      invDate,
+      invType,
+      trn,
+      custName,
+      custAddr,
+      custTrn,
+      custPhone,
+      custEmail,
+      items,
+      vatPct,
+      discount,
+      subtotal,
+      vat,
+      grand,
+      notes,
+      paidAmount,
+      remainingAmount,
+      logoB64,
+      stampB64,
+      sigB64,
+    });
+    const w = window.open("", "_blank");
+    if (!w) {
       setDownloading(false);
+      return;
     }
+    w.document.write(html);
+    w.document.close();
+    setTimeout(() => setDownloading(false), 2000);
   }, [
     downloading,
     invNo,
@@ -3558,14 +3411,12 @@ export default function AmaraaInvoiceGenerator() {
     sigB64,
   ]);
 
-  // Only create second page if items exceed first page limit
-
   /* ══════════════════════════════ FORM VIEW ══════════════════════════════ */
   if (!showInvoice)
     return (
       <div className="min-h-screen font-sans bg-[#d4d4d4]">
         <Nav />
-        <div className="max-w-4xl mx-auto p-6">
+        <div className="max-w-2xl mx-auto p-6">
           <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
             <div className="bg-[#0D1B4B] px-8 py-6 flex items-center justify-between">
               <div className="h-16">
@@ -3910,14 +3761,6 @@ export default function AmaraaInvoiceGenerator() {
                   stroke="currentColor"
                   strokeWidth="2.5"
                 >
-                  <circle
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeOpacity="0.25"
-                    fill="none"
-                  />
                   <path d="M12 2a10 10 0 0 1 10 10" strokeLinecap="round" />
                 </svg>
                 <span>Preparing PDF…</span>
@@ -3990,11 +3833,6 @@ export default function AmaraaInvoiceGenerator() {
                     <div className="text-[10px] mt-1 opacity-60">
                       TRN: {trn}
                     </div>
-                    {previewPages.length > 1 && (
-                      <div className="text-[9px] mt-1 opacity-50">
-                        Page {pageIdx + 1} of {previewPages.length}
-                      </div>
-                    )}
                   </div>
                 </div>
                 <div
@@ -4077,7 +3915,7 @@ export default function AmaraaInvoiceGenerator() {
                           ].map((h, i) => (
                             <th
                               key={h}
-                              className={`text-[9px] tracking-wider uppercase text-blue-700 py-2 px-3 font-medium ${i > 1 ? "text-left" : "text-left"}`}
+                              className={`text-[9px] tracking-wider uppercase text-blue-700 py-2 px-3 font-medium ${i > 1 ? "text-right" : "text-left"}`}
                             >
                               {h}
                             </th>
@@ -4096,21 +3934,21 @@ export default function AmaraaInvoiceGenerator() {
                             <td className="py-2 px-3 text-gray-800 font-medium">
                               {it.itemCode || "—"}
                             </td>
-                            <td className="py-2 px-3 text-left text-gray-600">
+                            <td className="py-2 px-3 text-right text-gray-600">
                               {it.qty}
                             </td>
-                            <td className="py-2 px-3 text-left text-gray-600">
+                            <td className="py-2 px-3 text-right text-gray-600">
                               {it.GWT || "—"}
                             </td>
-                            <td className="py-2 px-3 text-left text-gray-600">
+                            <td className="py-2 px-3 text-right text-gray-600">
                               {it.cts || "—"}
                             </td>
-                            <td className="py-2 px-3 text-left text-gray-600">
+                            <td className="py-2 px-3 text-right text-gray-600">
                               {it.price
                                 ? "AED " + Number(it.price).toFixed(2)
                                 : "—"}
                             </td>
-                            <td className="py-2 px-3 text-left font-semibold text-[#0D1B4B]">
+                            <td className="py-2 px-3 text-right font-semibold text-[#0D1B4B]">
                               {it.price
                                 ? "AED " +
                                   (it.qty * Number(it.price)).toFixed(2)
@@ -4122,7 +3960,7 @@ export default function AmaraaInvoiceGenerator() {
                     </table>
                   </div>
 
-                  {!isLast && previewPages.length > 1 && (
+                  {!isLast && (
                     <div className="text-center mt-4 text-xs text-gray-400 italic">
                       *** Continued on next page ***
                     </div>
@@ -4260,7 +4098,7 @@ export default function AmaraaInvoiceGenerator() {
                   </div>
                 )}
 
-                {previewPages.length > 1 && !isLast && (
+                {previewPages.length > 1 && (
                   <div className="text-center py-2 text-[10px] text-gray-400 bg-white border-t border-blue-50">
                     Page {pageIdx + 1} of {previewPages.length}
                   </div>
