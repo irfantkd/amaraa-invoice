@@ -2855,7 +2855,8 @@
 //   );
 // }
 import { useState, useCallback, useEffect } from "react";
-import logoSrc from "../../assets/images/logo.png";
+// import logoSrc from "../../assets/images/logo.png";
+import whitelogoSrc from "../../assets/images/whitelogo.png";
 import stampSrc from "../../assets/images/stemp.png";
 import signatureSrc from "../../assets/images/signature.png";
 import Nav from "../components/Nav";
@@ -3437,7 +3438,7 @@ export default function AmaraaInvoiceGenerator() {
 
   /* ── Convert local assets to base64 on mount ── */
   useEffect(() => {
-    toBase64(logoSrc)
+    toBase64(whitelogoSrc)
       .then(setLogoB64)
       .catch(() => {});
     toBase64(stampSrc)
