@@ -112,7 +112,6 @@ const toBase64 = (url) =>
           reader.readAsDataURL(blob);
         }),
     );
-const printWindow = window.open("", "_blank");
 
 /* ── build print HTML (images passed as full data-URLs) ── */
 const buildPrintHTML = (data) => {
@@ -147,6 +146,7 @@ const buildPrintHTML = (data) => {
       <td style="padding:8px 10px;border-bottom:1px solid #E8ECF5;">${i + 1}</td>
       <td style="padding:8px 10px;border-bottom:1px solid #E8ECF5;">${it.itemCode || "—"}</td>
       <td style="padding:8px 10px;border-bottom:1px solid #E8ECF5;text-align:right;">${it.qty}</td>
+      <td style="padding:8px 10px;border-bottom:1px solid #E8ECF5;text-align:right;">${it.GWT}</td>
       <td style="padding:8px 10px;border-bottom:1px solid #E8ECF5;text-align:right;">${it.cts || "—"}</td>
       <td style="padding:8px 10px;border-bottom:1px solid #E8ECF5;text-align:right;">${it.price ? "AED " + Number(it.price).toFixed(2) : "—"}</td>
       <td style="padding:8px 10px;border-bottom:1px solid #E8ECF5;text-align:right;">${it.price ? "AED " + (it.qty * Number(it.price)).toFixed(2) : "—"}</td>
@@ -154,27 +154,182 @@ const buildPrintHTML = (data) => {
     )
     .join("");
 
+  //   return `<!DOCTYPE html><html><head><meta charset="UTF-8">
+  // <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  // <style>
+  //   *{box-sizing:border-box;margin:0;padding:0}
+  //   body{font-family:'DM Sans',sans-serif;background:#fff;padding:20px;}
+  //   @media print{body{padding:0;}@page{margin:10mm;}}
+  // </style>
+  // </head><body>
+  // <div style="border:1px solid #C5CDE8;border-radius:12px;overflow:hidden;max-width:900px;margin:auto;">
+
+  //   <!-- HEADER -->
+  //   <div style="background:#0D1B4B;color:#ffffff;padding:24px 28px;display:flex;justify-content:space-between;align-items:center;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
+
+  //   <div>
+  //     ${
+  //       logoB64
+  //         ? `<img src="${logoB64}"
+  //                 style="height:70px;object-fit:contain;
+  //                        filter: brightness(0) invert(1);
+  //                        -webkit-filter: brightness(0) invert(1);" />`
+  //         : `<div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:600;letter-spacing:3px;color:#ffffff;">
+  //             AMARAA<br>
+  //             <span style="font-size:10px;letter-spacing:5px;opacity:0.7;color:#ffffff;">JEWELRY</span>
+  //            </div>`
+  //     }
+  //   </div>
+
+  //   <div style="text-align:right;font-size:12px;opacity:0.9;color:#ffffff;">
+  //     <div style="font-family:'Cormorant Garamond',serif;font-size:18px;letter-spacing:2px;color:#A8B8E8;font-weight:600;">
+  //       ${invType.toUpperCase()}
+  //     </div>
+  //     <div>No. ${invNo}</div>
+  //     <div>Date: ${formatDate(invDate)}</div>
+  //     <div style="margin-top:4px;font-size:10px;opacity:0.7;">
+  //       TRN: ${trn}
+  //     </div>
+  //   </div>
+
+  // </div>
+
+  //   <!-- ACCENT BAR -->
+  //   <div style="height:3px;background:linear-gradient(90deg,#2B3A7A,#A8B8E8,#2B3A7A);"></div>
+
+  //   <div style="padding:24px 28px;">
+  //     <!-- FROM / TO -->
+  //     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+  //       <div>
+  //         <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#2B3A7A;margin-bottom:5px;">From</div>
+  //         <div style="font-size:14px;font-weight:500;color:#0D1B4B;">Amaraa FZCO</div>
+  //         <div style="font-size:12px;color:#555;margin-top:2px;line-height:1.6;">Almas 25-J-04, Almas Tower<br>JLT-PH1-A0, Jumeirah Lake Towers<br>Dubai, United Arab Emirates<br>Tel: +971 543969425 | +971 521866038<br>info@amaraa.com · www.amaraa.com</div>
+  //       </div>
+  //       <!-- BANK DETAILS -->
+  // <div style="margin-top:24px;padding:14px 16px;background:#EEF1FA;border-radius:8px;border:1px solid #C5CDE8;">
+  //   <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#2B3A7A;margin-bottom:8px;font-weight:600;">Bank Details</div>
+  //   <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px 24px;font-size:11px;color:#333;">
+  //     <div><span style="color:#555;font-size:10px;">Bank Name:</span><br/><strong>National Bank of Ras Al-Khaimah</strong></div>
+  //     <div><span style="color:#555;font-size:10px;">Account Name:</span><br/><strong>AMARAA FZCO</strong></div>
+  //     <div><span style="color:#555;font-size:10px;">Account Number:</span><br/><strong>0333479509001</strong></div>
+  //     <div><span style="color:#555;font-size:10px;">SWIFT Code:</span><br/><strong>NRAKAEAK</strong></div>
+  //     <div><span style="color:#555;font-size:10px;">IBAN:</span><br/><strong>AE25 0400 0003 3347 9509 001</strong></div>
+  //     <div><span style="color:#555;font-size:10px;">Currency:</span><br/><strong>AED</strong></div>
+  //     <div><span style="color:#555;font-size:10px;">Payment Code:</span><br/><strong>GDS</strong></div>
+  //     <div><span style="color:#555;font-size:10px;">Purpose of Payment:</span><br/><strong>Payment received against invoice No.</strong></div>
+  //   </div>
+  // </div>
+  //       <div>
+  //         <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#2B3A7A;margin-bottom:5px;">To</div>
+  //         <div style="font-size:14px;font-weight:500;color:#0D1B4B;">${custName || "—"}</div>
+  //         <div style="font-size:12px;color:#555;margin-top:2px;line-height:1.6;">${custAddr || ""}${custTrn ? "<br>TRN: " + custTrn : ""}${[custPhone, custEmail].filter(Boolean).join(" | ") ? "<br>" + [custPhone, custEmail].filter(Boolean).join(" | ") : ""}</div>
+  //       </div>
+  //     </div>
+
+  //     <div style="margin-bottom:12px;font-weight:500;font-size:13px;color:#2B3A7A;letter-spacing:0.5px;">✦ Lab Grown Diamonds</div>
+
+  //     <!-- ITEMS TABLE -->
+  //     <table style="width:100%;border-collapse:collapse;font-size:12px;margin:16px 0;">
+  //       <thead>
+  //         <tr style="background:#EEF1FA;">
+  //           <th style="padding:8px 10px;text-align:left;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#2B3A7A;">Sl.</th>
+  //           <th style="padding:8px 10px;text-align:left;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#2B3A7A;">Item Name / Code</th>
+  //           <th style="padding:8px 10px;text-align:right;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#2B3A7A;">Qty</th>
+  //           <th style="padding:8px 10px;text-align:right;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#2B3A7A;">GWT</th>
+  //           <th style="padding:8px 10px;text-align:right;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#2B3A7A;">Cts/Size</th>
+  //           <th style="padding:8px 10px;text-align:right;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#2B3A7A;">Unit Price</th>
+  //           <th style="padding:8px 10px;text-align:right;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#2B3A7A;">Amount (AED)</th>
+  //         </tr>
+  //       </thead>
+  //       <tbody>${rows}</tbody>
+  //     </table>
+
+  //     <!-- TOTALS -->
+  //     <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:16px;">
+  //       <div style="flex:1;">
+  //         <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#2B3A7A;margin-bottom:4px;">Amount in Words</div>
+  //         <div style="background:#EEF1FA;border-radius:6px;padding:8px 12px;font-style:italic;font-size:12px;color:#0D1B4B;">${grandToWords(grand)}</div>
+  //         ${notes ? `<div style="font-size:11px;color:#888;font-style:italic;margin-top:6px;">${notes}</div>` : ""}
+  //       </div>
+  //       <div style="width:230px;font-size:12px;">
+  //         <div style="display:flex;justify-content:space-between;padding:4px 0;color:#666;"><span>Subtotal</span><span>${fmt(subtotal)}</span></div>
+  //         ${discount > 0 ? `<div style="display:flex;justify-content:space-between;padding:4px 0;color:#666;"><span>Discount</span><span>${fmt(discount)}</span></div>` : ""}
+  //         <div style="display:flex;justify-content:space-between;padding:4px 0;color:#666;"><span>VAT ${vatPct}%</span><span>${fmt(vat)}</span></div>
+  //         <div style="display:flex;justify-content:space-between;padding:4px 0;color:#666;"><span>Paid Amount</span><span>${fmt(paidAmount || 0)}</span></div>
+  //         <div style="display:flex;justify-content:space-between;padding:8px 0 4px;color:#0D1B4B;font-weight:600;font-size:14px;border-top:1px solid #C5CDE8;margin-top:4px;"><span>Remaining Amount</span><span>${fmt(remainingAmount)}</span></div>
+  //       </div>
+  //     </div>
+  //   <!-- BANK DETAILS -->
+  //     <div style="margin-top:20px;padding:14px 16px;background:#EEF1FA;border-radius:8px;border:1px solid #C5CDE8;">
+  //       <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#2B3A7A;margin-bottom:8px;font-weight:600;">Bank Details</div>
+  //       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px 24px;font-size:11px;color:#333;">
+  //         <div><span style="color:#555;font-size:10px;">Bank Name:</span><br/><strong>National Bank of Ras Al-Khaimah</strong></div>
+  //         <div><span style="color:#555;font-size:10px;">Account Name:</span><br/><strong>AMARAA FZCO</strong></div>
+  //         <div><span style="color:#555;font-size:10px;">Account Number:</span><br/><strong>0333479509001</strong></div>
+  //         <div><span style="color:#555;font-size:10px;">SWIFT Code:</span><br/><strong>NRAKAEAK</strong></div>
+  //         <div><span style="color:#555;font-size:10px;">IBAN:</span><br/><strong>AE25 0400 0003 3347 9509 001</strong></div>
+  //         <div><span style="color:#555;font-size:10px;">Currency:</span><br/><strong>AED</strong></div>
+  //         <div><span style="color:#555;font-size:10px;">Payment Code:</span><br/><strong>GDS</strong></div>
+  //         <div><span style="color:#555;font-size:10px;">Purpose of Payment:</span><br/><strong>Payment received against invoice No.</strong></div>
+  //       </div>
+  //     </div>
+  //     <!-- SIGNATURES -->
+  //     <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:36px;">
+  //       <div style="text-align:center;">
+  //         <div style="height:50px;"></div>
+  //         <div style="border-top:1px solid #ccc;width:150px;padding-top:4px;font-size:10px;color:#888;">Receiver's Sign</div>
+  //       </div>
+  //       <div style="text-align:center;">
+  //         ${stampB64 ? `<img src="${stampB64}" style="width:110px;height:110px;object-fit:contain;opacity:0.9;" />` : ""}
+  //       </div>
+  //       <div style="text-align:center;">
+  //         ${sigB64 ? `<img src="${sigB64}" style="width:130px;height:65px;object-fit:contain;" />` : ""}
+  //         <div style="border-top:1px solid #ccc;width:150px;padding-top:4px;font-size:10px;color:#888;margin-top:4px;">AMARAA JEWELRY</div>
+  //       </div>
+  //     </div>
+  //   </div>
+
+  //   <!-- FOOTER -->
+  //   <div style="background:#EEF1FA;padding:16px 28px;border-top:1px solid #C5CDE8;display:grid;grid-template-columns:1fr 1fr;gap:16px;font-size:11px;color:#555;">
+  //     <div>
+  //       <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#2B3A7A;margin-bottom:4px;">Contact</div>
+  //       Tel: +971 543969425 / +971 521866038<br>WhatsApp: +971 54 396 9425<br>info@amaraa.com · www.amaraa.com
+  //     </div>
+  //     <div>
+  //       <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#2B3A7A;margin-bottom:4px;">Registered Address</div>
+  //       Almas Tower, Plot No JLT-PH1-A0<br>Jumeirah Lake Towers, Dubai, UAE<br>License: DMCC-896920
+  //     </div>
+  //   </div>
+  // </div>
+  // <script>window.onload=()=>setTimeout(()=>window.print(),800);</script>
+  // </body></html>`;
   return `<!DOCTYPE html><html><head><meta charset="UTF-8">
-<title>Amaraa Invoice ${invNo}</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:'DM Sans',sans-serif;background:#fff;padding:20px;}
+  body{font-family:'DM Sans',sans-serif;background:#fff;padding:20px;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
   @media print{body{padding:0;}@page{margin:10mm;}}
+  
+  /* High-performance hardware filters to force white inversion on mobile layouts */
+  .mobile-white-logo {
+    filter: brightness(0) invert(1) !important;
+    -webkit-filter: brightness(0) invert(1) !important;
+    backface-visibility: hidden;
+    transform: translateZ(0);
+  }
 </style>
 </head><body>
 <div style="border:1px solid #C5CDE8;border-radius:12px;overflow:hidden;max-width:900px;margin:auto;">
 
-  <!-- HEADER -->
   <div style="background:#0D1B4B;color:#ffffff;padding:24px 28px;display:flex;justify-content:space-between;align-items:center;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
   
   <div>
     ${
       logoB64
-        ? `<img src="${logoB64}" 
+        ? `<img src="${logoB64}" class="mobile-white-logo"
                 style="height:70px;object-fit:contain;
-                       filter: brightness(0) invert(1);
-                       -webkit-filter: brightness(0) invert(1);" />`
+                       filter: brightness(0) invert(1) !important;
+                       -webkit-filter: brightness(0) invert(1) !important;" />`
         : `<div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:600;letter-spacing:3px;color:#ffffff;">
             AMARAA<br>
             <span style="font-size:10px;letter-spacing:5px;opacity:0.7;color:#ffffff;">JEWELRY</span>
@@ -195,12 +350,10 @@ const buildPrintHTML = (data) => {
 
 </div>
 
-  <!-- ACCENT BAR -->
   <div style="height:3px;background:linear-gradient(90deg,#2B3A7A,#A8B8E8,#2B3A7A);"></div>
 
   <div style="padding:24px 28px;">
-    <!-- FROM / TO -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:20px;">
       <div>
         <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#2B3A7A;margin-bottom:5px;">From</div>
         <div style="font-size:14px;font-weight:500;color:#0D1B4B;">Amaraa FZCO</div>
@@ -215,13 +368,13 @@ const buildPrintHTML = (data) => {
 
     <div style="margin-bottom:12px;font-weight:500;font-size:13px;color:#2B3A7A;letter-spacing:0.5px;">✦ Lab Grown Diamonds</div>
 
-    <!-- ITEMS TABLE -->
     <table style="width:100%;border-collapse:collapse;font-size:12px;margin:16px 0;">
       <thead>
         <tr style="background:#EEF1FA;">
           <th style="padding:8px 10px;text-align:left;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#2B3A7A;">Sl.</th>
           <th style="padding:8px 10px;text-align:left;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#2B3A7A;">Item Name / Code</th>
           <th style="padding:8px 10px;text-align:right;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#2B3A7A;">Qty</th>
+          <th style="padding:8px 10px;text-align:right;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#2B3A7A;">GWT</th>
           <th style="padding:8px 10px;text-align:right;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#2B3A7A;">Cts/Size</th>
           <th style="padding:8px 10px;text-align:right;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#2B3A7A;">Unit Price</th>
           <th style="padding:8px 10px;text-align:right;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#2B3A7A;">Amount (AED)</th>
@@ -230,14 +383,27 @@ const buildPrintHTML = (data) => {
       <tbody>${rows}</tbody>
     </table>
 
-    <!-- TOTALS -->
-    <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:16px;">
-      <div style="flex:1;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:20px;margin-top:16px;">
+      <div style="flex:1; min-width:280px;">
         <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#2B3A7A;margin-bottom:4px;">Amount in Words</div>
-        <div style="background:#EEF1FA;border-radius:6px;padding:8px 12px;font-style:italic;font-size:12px;color:#0D1B4B;">${grandToWords(grand)}</div>
-        ${notes ? `<div style="font-size:11px;color:#888;font-style:italic;margin-top:6px;">${notes}</div>` : ""}
+        <div style="background:#EEF1FA;border-radius:6px;padding:8px 12px;font-style:italic;font-size:12px;color:#0D1B4B;margin-bottom:14px;">${grandToWords(grand)}</div>
+        ${notes ? `<div style="font-size:11px;color:#888;font-style:italic;margin-top:4px;margin-bottom:12px;">${notes}</div>` : ""}
+        
+        <div style="padding:12px 14px;background:#EEF1FA;border-radius:8px;border:1px solid #C5CDE8;">
+          <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#2B3A7A;margin-bottom:6px;font-weight:600;">Bank Details</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 16px;font-size:11px;color:#333;">
+            <div><span style="color:#555;font-size:9px;">Bank Name:</span><br/><strong>National Bank of Ras Al-Khaimah</strong></div>
+            <div><span style="color:#555;font-size:9px;">Account Name:</span><br/><strong>AMARAA FZCO</strong></div>
+            <div><span style="color:#555;font-size:9px;">Account Number:</span><br/><strong>0333479509001</strong></div>
+            <div><span style="color:#555;font-size:9px;">SWIFT Code:</span><br/><strong>NRAKAEAK</strong></div>
+            <div style="grid-column: span 2;"><span style="color:#555;font-size:9px;">IBAN:</span><br/><strong>AE25 0400 0003 3347 9509 001</strong></div>
+            <div><span style="color:#555;font-size:9px;">Currency:</span><br/><strong>AED</strong></div>
+            <div><span style="color:#555;font-size:9px;">Purpose of Payment:</span><br/><strong>Invoice ${invNo || ""}</strong></div>
+          </div>
+        </div>
       </div>
-      <div style="width:230px;font-size:12px;">
+      
+      <div style="width:230px;font-size:12px;margin-top:4px;">
         <div style="display:flex;justify-content:space-between;padding:4px 0;color:#666;"><span>Subtotal</span><span>${fmt(subtotal)}</span></div>
         ${discount > 0 ? `<div style="display:flex;justify-content:space-between;padding:4px 0;color:#666;"><span>Discount</span><span>${fmt(discount)}</span></div>` : ""}
         <div style="display:flex;justify-content:space-between;padding:4px 0;color:#666;"><span>VAT ${vatPct}%</span><span>${fmt(vat)}</span></div>
@@ -246,8 +412,7 @@ const buildPrintHTML = (data) => {
       </div>
     </div>
 
-    <!-- SIGNATURES -->
-    <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:36px;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:40px;">
       <div style="text-align:center;">
         <div style="height:50px;"></div>
         <div style="border-top:1px solid #ccc;width:150px;padding-top:4px;font-size:10px;color:#888;">Receiver's Sign</div>
@@ -262,7 +427,6 @@ const buildPrintHTML = (data) => {
     </div>
   </div>
 
-  <!-- FOOTER -->
   <div style="background:#EEF1FA;padding:16px 28px;border-top:1px solid #C5CDE8;display:grid;grid-template-columns:1fr 1fr;gap:16px;font-size:11px;color:#555;">
     <div>
       <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#2B3A7A;margin-bottom:4px;">Contact</div>
@@ -564,6 +728,7 @@ export default function AmaraaInvoiceGenerator() {
                       {[
                         "Item Name / Code",
                         "Qty",
+                        "GWT",
                         "Cts/Size",
                         "Price (AED)",
                         "",
@@ -598,6 +763,16 @@ export default function AmaraaInvoiceGenerator() {
                             min={1}
                             onChange={(e) =>
                               updateItem(it.id, "qty", Number(e.target.value))
+                            }
+                          />
+                        </td>
+                        <td className="py-1 px-1 w-16">
+                          <Input
+                            className="text-xs py-1 w-16"
+                            value={it.GWT}
+                            placeholder="0.0g"
+                            onChange={(e) =>
+                              updateItem(it.id, "GWT", e.target.value)
                             }
                           />
                         </td>
@@ -860,6 +1035,7 @@ export default function AmaraaInvoiceGenerator() {
                       "Sl.",
                       "Item Name / Code",
                       "Qty",
+                      "GWT",
                       "Cts/Size",
                       "Unit Price",
                       "Amount (AED)",
@@ -885,6 +1061,9 @@ export default function AmaraaInvoiceGenerator() {
                       </td>
                       <td className="py-2 px-3 text-right text-gray-600">
                         {it.qty}
+                      </td>
+                      <td className="py-2 px-3 text-right text-gray-600">
+                        {it.GWT}
                       </td>
                       <td className="py-2 px-3 text-right text-gray-600">
                         {it.cts || "—"}
