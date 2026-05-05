@@ -160,157 +160,8 @@ const buildPrintHTML = (data) => {
     )
     .join("");
 
-  //   return `<!DOCTYPE html><html><head><meta charset="UTF-8">
-  // <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-  // <style>
-  //   *{box-sizing:border-box;margin:0;padding:0}
-  //   body{font-family:'DM Sans',sans-serif;background:#fff;padding:20px;}
-  //   @media print{body{padding:0;}@page{margin:10mm;}}
-  // </style>
-  // </head><body>
-  // <div style="border:1px solid #C5CDE8;border-radius:12px;overflow:hidden;max-width:900px;margin:auto;">
-
-  //   <!-- HEADER -->
-  //   <div style="background:#0D1B4B;color:#ffffff;padding:24px 28px;display:flex;justify-content:space-between;align-items:center;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
-
-  //   <div>
-  //     ${
-  //       logoB64
-  //         ? `<img src="${logoB64}"
-  //                 style="height:70px;object-fit:contain;
-  //                        filter: brightness(0) invert(1);
-  //                        -webkit-filter: brightness(0) invert(1);" />`
-  //         : `<div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:600;letter-spacing:3px;color:#ffffff;">
-  //             AMARAA<br>
-  //             <span style="font-size:10px;letter-spacing:5px;opacity:0.7;color:#ffffff;">JEWELRY</span>
-  //            </div>`
-  //     }
-  //   </div>
-
-  //   <div style="text-align:right;font-size:12px;opacity:0.9;color:#ffffff;">
-  //     <div style="font-family:'Cormorant Garamond',serif;font-size:18px;letter-spacing:2px;color:#A8B8E8;font-weight:600;">
-  //       ${invType.toUpperCase()}
-  //     </div>
-  //     <div>No. ${invNo}</div>
-  //     <div>Date: ${formatDate(invDate)}</div>
-  //     <div style="margin-top:4px;font-size:10px;opacity:0.7;">
-  //       TRN: ${trn}
-  //     </div>
-  //   </div>
-
-  // </div>
-
-  //   <!-- ACCENT BAR -->
-  //   <div style="height:3px;background:linear-gradient(90deg,#2B3A7A,#A8B8E8,#2B3A7A);"></div>
-
-  //   <div style="padding:24px 28px;">
-  //     <!-- FROM / TO -->
-  //     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
-  //       <div>
-  //         <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#2B3A7A;margin-bottom:5px;">From</div>
-  //         <div style="font-size:14px;font-weight:500;color:#0D1B4B;">Amaraa FZCO</div>
-  //         <div style="font-size:12px;color:#555;margin-top:2px;line-height:1.6;">Almas 25-J-04, Almas Tower<br>JLT-PH1-A0, Jumeirah Lake Towers<br>Dubai, United Arab Emirates<br>Tel: +971 543969425 | +971 521866038<br>info@amaraa.com · www.amaraa.com</div>
-  //       </div>
-  //       <!-- BANK DETAILS -->
-  // <div style="margin-top:24px;padding:14px 16px;background:#EEF1FA;border-radius:8px;border:1px solid #C5CDE8;">
-  //   <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#2B3A7A;margin-bottom:8px;font-weight:600;">Bank Details</div>
-  //   <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px 24px;font-size:11px;color:#333;">
-  //     <div><span style="color:#555;font-size:10px;">Bank Name:</span><br/><strong>National Bank of Ras Al-Khaimah</strong></div>
-  //     <div><span style="color:#555;font-size:10px;">Account Name:</span><br/><strong>AMARAA FZCO</strong></div>
-  //     <div><span style="color:#555;font-size:10px;">Account Number:</span><br/><strong>0333479509001</strong></div>
-  //     <div><span style="color:#555;font-size:10px;">SWIFT Code:</span><br/><strong>NRAKAEAK</strong></div>
-  //     <div><span style="color:#555;font-size:10px;">IBAN:</span><br/><strong>AE25 0400 0003 3347 9509 001</strong></div>
-  //     <div><span style="color:#555;font-size:10px;">Currency:</span><br/><strong>AED</strong></div>
-  //     <div><span style="color:#555;font-size:10px;">Payment Code:</span><br/><strong>GDS</strong></div>
-  //     <div><span style="color:#555;font-size:10px;">Purpose of Payment:</span><br/><strong>Payment received against invoice No.</strong></div>
-  //   </div>
-  // </div>
-  //       <div>
-  //         <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#2B3A7A;margin-bottom:5px;">To</div>
-  //         <div style="font-size:14px;font-weight:500;color:#0D1B4B;">${custName || "—"}</div>
-  //         <div style="font-size:12px;color:#555;margin-top:2px;line-height:1.6;">${custAddr || ""}${custTrn ? "<br>TRN: " + custTrn : ""}${[custPhone, custEmail].filter(Boolean).join(" | ") ? "<br>" + [custPhone, custEmail].filter(Boolean).join(" | ") : ""}</div>
-  //       </div>
-  //     </div>
-
-  //     <div style="margin-bottom:12px;font-weight:500;font-size:13px;color:#2B3A7A;letter-spacing:0.5px;">✦ Lab Grown Diamonds</div>
-
-  //     <!-- ITEMS TABLE -->
-  //     <table style="width:100%;border-collapse:collapse;font-size:12px;margin:16px 0;">
-  //       <thead>
-  //         <tr style="background:#EEF1FA;">
-  //           <th style="padding:8px 10px;text-align:left;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#2B3A7A;">Sl.</th>
-  //           <th style="padding:8px 10px;text-align:left;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#2B3A7A;">Item Name / Code</th>
-  //           <th style="padding:8px 10px;text-align:right;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#2B3A7A;">Qty</th>
-  //           <th style="padding:8px 10px;text-align:right;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#2B3A7A;">GWT</th>
-  //           <th style="padding:8px 10px;text-align:right;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#2B3A7A;">Cts/Size</th>
-  //           <th style="padding:8px 10px;text-align:right;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#2B3A7A;">Unit Price</th>
-  //           <th style="padding:8px 10px;text-align:right;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#2B3A7A;">Amount (AED)</th>
-  //         </tr>
-  //       </thead>
-  //       <tbody>${rows}</tbody>
-  //     </table>
-
-  //     <!-- TOTALS -->
-  //     <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:16px;">
-  //       <div style="flex:1;">
-  //         <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#2B3A7A;margin-bottom:4px;">Amount in Words</div>
-  //         <div style="background:#EEF1FA;border-radius:6px;padding:8px 12px;font-style:italic;font-size:12px;color:#0D1B4B;">${grandToWords(grand)}</div>
-  //         ${notes ? `<div style="font-size:11px;color:#888;font-style:italic;margin-top:6px;">${notes}</div>` : ""}
-  //       </div>
-  //       <div style="width:230px;font-size:12px;">
-  //         <div style="display:flex;justify-content:space-between;padding:4px 0;color:#666;"><span>Subtotal</span><span>${fmt(subtotal)}</span></div>
-  //         ${discount > 0 ? `<div style="display:flex;justify-content:space-between;padding:4px 0;color:#666;"><span>Discount</span><span>${fmt(discount)}</span></div>` : ""}
-  //         <div style="display:flex;justify-content:space-between;padding:4px 0;color:#666;"><span>VAT ${vatPct}%</span><span>${fmt(vat)}</span></div>
-  //         <div style="display:flex;justify-content:space-between;padding:4px 0;color:#666;"><span>Paid Amount</span><span>${fmt(paidAmount || 0)}</span></div>
-  //         <div style="display:flex;justify-content:space-between;padding:8px 0 4px;color:#0D1B4B;font-weight:600;font-size:14px;border-top:1px solid #C5CDE8;margin-top:4px;"><span>Remaining Amount</span><span>${fmt(remainingAmount)}</span></div>
-  //       </div>
-  //     </div>
-  //   <!-- BANK DETAILS -->
-  //     <div style="margin-top:20px;padding:14px 16px;background:#EEF1FA;border-radius:8px;border:1px solid #C5CDE8;">
-  //       <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#2B3A7A;margin-bottom:8px;font-weight:600;">Bank Details</div>
-  //       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px 24px;font-size:11px;color:#333;">
-  //         <div><span style="color:#555;font-size:10px;">Bank Name:</span><br/><strong>National Bank of Ras Al-Khaimah</strong></div>
-  //         <div><span style="color:#555;font-size:10px;">Account Name:</span><br/><strong>AMARAA FZCO</strong></div>
-  //         <div><span style="color:#555;font-size:10px;">Account Number:</span><br/><strong>0333479509001</strong></div>
-  //         <div><span style="color:#555;font-size:10px;">SWIFT Code:</span><br/><strong>NRAKAEAK</strong></div>
-  //         <div><span style="color:#555;font-size:10px;">IBAN:</span><br/><strong>AE25 0400 0003 3347 9509 001</strong></div>
-  //         <div><span style="color:#555;font-size:10px;">Currency:</span><br/><strong>AED</strong></div>
-  //         <div><span style="color:#555;font-size:10px;">Payment Code:</span><br/><strong>GDS</strong></div>
-  //         <div><span style="color:#555;font-size:10px;">Purpose of Payment:</span><br/><strong>Payment received against invoice No.</strong></div>
-  //       </div>
-  //     </div>
-  //     <!-- SIGNATURES -->
-  //     <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:36px;">
-  //       <div style="text-align:center;">
-  //         <div style="height:50px;"></div>
-  //         <div style="border-top:1px solid #ccc;width:150px;padding-top:4px;font-size:10px;color:#888;">Receiver's Sign</div>
-  //       </div>
-  //       <div style="text-align:center;">
-  //         ${stampB64 ? `<img src="${stampB64}" style="width:110px;height:110px;object-fit:contain;opacity:0.9;" />` : ""}
-  //       </div>
-  //       <div style="text-align:center;">
-  //         ${sigB64 ? `<img src="${sigB64}" style="width:130px;height:65px;object-fit:contain;" />` : ""}
-  //         <div style="border-top:1px solid #ccc;width:150px;padding-top:4px;font-size:10px;color:#888;margin-top:4px;">AMARAA JEWELRY</div>
-  //       </div>
-  //     </div>
-  //   </div>
-
-  //   <!-- FOOTER -->
-  //   <div style="background:#EEF1FA;padding:16px 28px;border-top:1px solid #C5CDE8;display:grid;grid-template-columns:1fr 1fr;gap:16px;font-size:11px;color:#555;">
-  //     <div>
-  //       <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#2B3A7A;margin-bottom:4px;">Contact</div>
-  //       Tel: +971 543969425 / +971 521866038<br>WhatsApp: +971 54 396 9425<br>info@amaraa.com · www.amaraa.com
-  //     </div>
-  //     <div>
-  //       <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#2B3A7A;margin-bottom:4px;">Registered Address</div>
-  //       Almas Tower, Plot No JLT-PH1-A0<br>Jumeirah Lake Towers, Dubai, UAE<br>License: DMCC-896920
-  //     </div>
-  //   </div>
-  // </div>
-  // <script>window.onload=()=>setTimeout(()=>window.print(),800);</script>
-  // </body></html>`;
   return `<!DOCTYPE html><html><head><meta charset="UTF-8">
-  <meta name="viewport" content="width=900, initial-scale=1.0">
+<meta name="viewport" content="width=900, initial-scale=1.0, maximum-scale=4.0, user-scalable=yes">
 
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
@@ -327,34 +178,43 @@ const buildPrintHTML = (data) => {
   .invoice-wrap{
     width:900px;
     margin:0 auto;
+    transform-origin:top left;
   }
   .mobile-white-logo{
     filter:brightness(0) invert(1) !important;
     -webkit-filter:brightness(0) invert(1) !important;
   }
-  @media print{
-    html,body{
-      width:100% !important;
-      margin:0 !important;
-      padding:0 !important;
-      overflow:visible !important;
-    }
-    @page{
-      size:A4 portrait;
-      margin:0;
-    }
-    .invoice-wrap{
-      width:100% !important;
-      transform:none !important;
-    }
-    /* Only allow page break after 10 items */
-    .page-break-row{
-      page-break-before:always;
-    }
+  @media print {
+  html, body {
+    width: 100% !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+  .invoice-wrap {
+    transform: none !important;
+    width: 100% !important;
+  }
+  .invoice-wrap.single-page {
+    page-break-inside: avoid !important;
+    max-height: 297mm !important;
+    overflow: hidden !important;
+  }
+  .invoice-wrap.multi-page {
+    page-break-inside: auto !important;
+  }
+}
   }
 </style>
 </head><body>
-<div class="invoice-wrap" style="border:1px solid #C5CDE8;border-radius:12px;overflow:hidden;max-width:900px;margin:auto;">
+<div class="invoice-wrap ${itemCount <= 10 ? "single-page" : "multi-page"}" style="border:1px solid #C5CDE8;border-radius:12px;overflow:hidden;max-width:900px;margin:auto;">
 
   <div style="background:#0D1B4B;color:#ffffff;padding:24px 28px;display:flex;justify-content:space-between;align-items:center;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
   
@@ -478,33 +338,72 @@ window.onload = function() {
     var wrap = document.querySelector('.invoice-wrap');
     if (!wrap) { window.print(); return; }
 
-    var A4_H = 1123; // A4 height px at 96dpi
-    var contentH = wrap.scrollHeight;
-    var itemCount = ${itemCount}; // injected from JS
+    var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    var isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    var designW = 900;
+    var screenW = window.innerWidth || document.documentElement.clientWidth || 900;
+    var itemCount = ${itemCount};
 
-    // If 10 or fewer items, force everything onto one page by scaling
+    if (isIOS || isSafari) {
+      // iOS Safari — use viewport scaling, no transform
+      var meta = document.querySelector('meta[name=viewport]');
+      if (meta) {
+        meta.setAttribute('content', 'width=' + designW + ', initial-scale=' + (screenW / designW) + ', maximum-scale=4.0');
+      }
+
+      if (itemCount <= 10) {
+        // Force everything to fit one page on iOS
+        document.body.style.height = '297mm';
+        document.body.style.overflow = 'hidden';
+        wrap.style.maxHeight = '297mm';
+        wrap.style.overflow = 'hidden';
+      }
+
+      setTimeout(function() { window.print(); }, 800);
+      return;
+    }
+
+    // ── Android / Chrome / Desktop ──
+    var A4_W = 794;  // px at 96dpi
+    var A4_H = 1123; // px at 96dpi
+
     if (itemCount <= 10) {
-      var screenW = window.innerWidth || document.documentElement.clientWidth;
-      var designW = 900;
-      var scaleByW = screenW / designW;
+      // MUST fit on one page — scale both width AND height to fit
+      var contentW = wrap.scrollWidth;
+      var contentH = wrap.scrollHeight;
 
-      // Check if content fits in A4 height after width scaling
-      var scaledH = contentH * scaleByW;
-      var finalScale = scaledH > A4_H ? (A4_H / contentH) : scaleByW;
+      // Scale to fill A4 width
+      var scaleW = A4_W / contentW;
+      // Check if height fits after width scale
+      var projectedH = contentH * scaleW;
+
+      var finalScale;
+      if (projectedH <= A4_H) {
+        // Fits in one page at width scale — use it
+        finalScale = scaleW;
+      } else {
+        // Height overflows — scale down to fit height instead
+        finalScale = A4_H / contentH;
+      }
 
       wrap.style.transformOrigin = 'top left';
       wrap.style.transform = 'scale(' + finalScale + ')';
-      wrap.style.marginBottom = '-' + (contentH * (1 - finalScale)) + 'px';
-      document.body.style.width = (designW * finalScale) + 'px';
+      // Collapse the extra space so body doesn't scroll
+      var newH = contentH * finalScale;
+      wrap.style.marginBottom = '-' + (contentH - newH) + 'px';
+      document.body.style.width = (contentW * finalScale) + 'px';
+      document.body.style.height = A4_H + 'px';
       document.body.style.overflow = 'hidden';
+
     } else {
-      // More than 10 items — allow natural multi-page flow
-      var screenW = window.innerWidth || document.documentElement.clientWidth;
-      var scale = screenW / 900;
+      // More than 10 items — natural multi-page, just scale width
+      var scale = screenW / designW;
+      var contentH = wrap.scrollHeight;
       wrap.style.transformOrigin = 'top left';
       wrap.style.transform = 'scale(' + scale + ')';
       wrap.style.marginBottom = '-' + (contentH * (1 - scale)) + 'px';
-      document.body.style.width = (900 * scale) + 'px';
+      document.body.style.width = (designW * scale) + 'px';
+      document.body.style.overflow = 'visible';
     }
 
     window.print();
