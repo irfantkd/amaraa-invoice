@@ -357,7 +357,7 @@ const buildPrintHTML = (data) => {
       <div>
         <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#2B3A7A;margin-bottom:5px;">From</div>
         <div style="font-size:14px;font-weight:500;color:#0D1B4B;">Amaraa FZCO</div>
-        <div style="font-size:12px;color:#555;margin-top:2px;line-height:1.6;">Almas 25-J-04, Almas Tower<br>JLT-PH1-A0, Jumeirah Lake Towers<br>Dubai, United Arab Emirates<br>Tel: +971 543969425 | +971 521866038<br>info@amaraa.com · www.amaraa.com</div>
+        <div style="font-size:12px;color:#555;margin-top:2px;line-height:1.6;">Almas 25-J-04, Almas Tower<br>JLT-PH1-A0, Jumeirah Lake Towers<br>Dubai, United Arab Emirates<br>Tel: +971 543969425 | +971 521866038<br>info@amaraa.com · www.amaraa.com <br/> BH CODE   7113.19</div>
       </div>
       <div>
         <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#2B3A7A;margin-bottom:5px;">To</div>
@@ -430,7 +430,7 @@ const buildPrintHTML = (data) => {
   <div style="background:#EEF1FA;padding:16px 28px;border-top:1px solid #C5CDE8;display:grid;grid-template-columns:1fr 1fr;gap:16px;font-size:11px;color:#555;">
     <div>
       <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#2B3A7A;margin-bottom:4px;">Contact</div>
-      Tel: +971 543969425 / +971 521866038<br>WhatsApp: +971 54 396 9425<br>info@amaraa.com · www.amaraa.com
+      Tel: +971 543969425 / +971 521866038<br>WhatsApp: +971 54 396 9425<br>info@amaraa.com · www.amaraa.com <br/> HS CODE  7113.19
     </div>
     <div>
       <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#2B3A7A;margin-bottom:4px;">Registered Address</div>
@@ -995,6 +995,8 @@ export default function AmaraaInvoiceGenerator() {
                   Tel: +971 543969425 | +971 521866038
                   <br />
                   info@amaraa.com · www.amaraa.com
+                  <br />
+                  BH CODE 7113.19
                 </div>
               </div>
               <div>
