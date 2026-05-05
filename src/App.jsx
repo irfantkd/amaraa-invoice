@@ -146,7 +146,7 @@ const buildPrintHTML = (data) => {
       <td style="padding:8px 10px;border-bottom:1px solid #E8ECF5;">${i + 1}</td>
       <td style="padding:8px 10px;border-bottom:1px solid #E8ECF5;">${it.itemCode || "—"}</td>
       <td style="padding:8px 10px;border-bottom:1px solid #E8ECF5;text-align:right;">${it.qty}</td>
-      <td style="padding:8px 10px;border-bottom:1px solid #E8ECF5;text-align:right;">${it.GWT}</td>
+      <td style="padding:8px 10px;border-bottom:1px solid #E8ECF5;text-align:right;">${it.GWT || "—"}</td>
       <td style="padding:8px 10px;border-bottom:1px solid #E8ECF5;text-align:right;">${it.cts || "—"}</td>
       <td style="padding:8px 10px;border-bottom:1px solid #E8ECF5;text-align:right;">${it.price ? "AED " + Number(it.price).toFixed(2) : "—"}</td>
       <td style="padding:8px 10px;border-bottom:1px solid #E8ECF5;text-align:right;">${it.price ? "AED " + (it.qty * Number(it.price)).toFixed(2) : "—"}</td>
