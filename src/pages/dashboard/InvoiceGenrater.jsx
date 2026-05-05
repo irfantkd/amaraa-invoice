@@ -2854,9 +2854,1436 @@
 //     </>
 //   );
 // }
+// import { useState, useCallback, useEffect } from "react";
+// // import logoSrc from "../../assets/images/logo.png";
+// import whitelogoSrc from "../../assets/images/whitelogo.png";
+// import stampSrc from "../../assets/images/stemp.png";
+// import signatureSrc from "../../assets/images/signature.png";
+// import Nav from "../components/Nav";
+
+// /* ── helpers ── */
+// const fmt = (n) =>
+//   "AED " +
+//   Number(n).toLocaleString("en-AE", {
+//     minimumFractionDigits: 2,
+//     maximumFractionDigits: 2,
+//   });
+
+// const numToWords = (n) => {
+//   const a = [
+//     "",
+//     "One",
+//     "Two",
+//     "Three",
+//     "Four",
+//     "Five",
+//     "Six",
+//     "Seven",
+//     "Eight",
+//     "Nine",
+//     "Ten",
+//     "Eleven",
+//     "Twelve",
+//     "Thirteen",
+//     "Fourteen",
+//     "Fifteen",
+//     "Sixteen",
+//     "Seventeen",
+//     "Eighteen",
+//     "Nineteen",
+//   ];
+//   const b = [
+//     "",
+//     "",
+//     "Twenty",
+//     "Thirty",
+//     "Forty",
+//     "Fifty",
+//     "Sixty",
+//     "Seventy",
+//     "Eighty",
+//     "Ninety",
+//   ];
+//   if (n === 0) return "Zero";
+//   if (n < 20) return a[n];
+//   if (n < 100) return b[Math.floor(n / 10)] + (n % 10 ? " " + a[n % 10] : "");
+//   if (n < 1000)
+//     return (
+//       a[Math.floor(n / 100)] +
+//       " Hundred" +
+//       (n % 100 ? " " + numToWords(n % 100) : "")
+//     );
+//   if (n < 100000)
+//     return (
+//       numToWords(Math.floor(n / 1000)) +
+//       " Thousand" +
+//       (n % 1000 ? " " + numToWords(n % 1000) : "")
+//     );
+//   return (
+//     numToWords(Math.floor(n / 100000)) +
+//     " Lakh" +
+//     (n % 100000 ? " " + numToWords(n % 100000) : "")
+//   );
+// };
+
+// const grandToWords = (grand) => {
+//   const int = Math.floor(grand);
+//   const fils = Math.round((grand - int) * 100);
+//   let words = numToWords(int) + " Dirhams";
+//   if (fils > 0) words += " and " + numToWords(fils) + " Fils";
+//   return words + " Only";
+// };
+
+// const today = () => new Date().toISOString().split("T")[0];
+// const formatDate = (dateStr) => {
+//   if (!dateStr)
+//     return new Date().toLocaleDateString("en-GB", {
+//       day: "2-digit",
+//       month: "short",
+//       year: "numeric",
+//     });
+//   return new Date(dateStr).toLocaleDateString("en-GB", {
+//     day: "2-digit",
+//     month: "short",
+//     year: "numeric",
+//   });
+// };
+
+// const newItem = () => ({
+//   id: Date.now(),
+//   itemCode: "",
+//   qty: 1,
+//   GWT: "",
+//   cts: "",
+//   price: "",
+// });
+
+// const toBase64 = (url) =>
+//   fetch(url)
+//     .then((r) => r.blob())
+//     .then(
+//       (blob) =>
+//         new Promise((res, rej) => {
+//           const reader = new FileReader();
+//           reader.onloadend = () => res(reader.result);
+//           reader.onerror = rej;
+//           reader.readAsDataURL(blob);
+//         }),
+//     );
+
+// /* ══════════════════════════════════════════════════════════════
+//    BUILD PRINT HTML WITH PROPER WIDTH AND CENTERING
+// ══════════════════════════════════════════════════════════════ */
+// /* ══════════════════════════════════════════════════════════════
+//    BUILD PRINT HTML WITH CONDITIONAL PAGINATION
+//    - Only creates pages when items actually require them
+//    - No empty "continued" pages
+// ══════════════════════════════════════════════════════════════ */
+// /* ══════════════════════════════════════════════════════════════
+//    BUILD PRINT HTML - ONLY CREATE PAGES WITH ACTUAL CONTENT
+// ══════════════════════════════════════════════════════════════ */
+// const buildPrintHTML = ({
+//   invNo,
+//   invDate,
+//   invType,
+//   trn,
+//   custName,
+//   custAddr,
+//   custTrn,
+//   custPhone,
+//   custEmail,
+//   items,
+//   vatPct,
+//   discount,
+//   subtotal,
+//   vat,
+//   grand,
+//   notes,
+//   paidAmount,
+//   remainingAmount,
+//   logoB64,
+//   stampB64,
+//   sigB64,
+// }) => {
+//   /* ── DYNAMIC PAGINATION - ONLY CREATE PAGES WITH ITEMS ── */
+//   const FIRST_PAGE_MAX_ITEMS = 10;
+//   const NEXT_PAGES_MAX_ITEMS = 18;
+
+//   // Calculate pages - only create pages that have items
+//   let pages = [];
+
+//   if (items.length === 0) {
+//     // If no items, create one page with empty state
+//     pages = [[]];
+//   } else if (items.length <= FIRST_PAGE_MAX_ITEMS) {
+//     // All items fit on first page
+//     pages = [items];
+//   } else {
+//     // First page with up to FIRST_PAGE_MAX_ITEMS items
+//     pages.push(items.slice(0, FIRST_PAGE_MAX_ITEMS));
+
+//     // Remaining items
+//     let remainingItems = items.slice(FIRST_PAGE_MAX_ITEMS);
+
+//     // Only add subsequent pages if there are remaining items
+//     while (remainingItems.length > 0) {
+//       const pageItems = remainingItems.slice(0, NEXT_PAGES_MAX_ITEMS);
+//       if (pageItems.length > 0) {
+//         pages.push(pageItems);
+//       }
+//       remainingItems = remainingItems.slice(NEXT_PAGES_MAX_ITEMS);
+//     }
+//   }
+
+//   // Debug: log pages info
+//   console.log(`Total items: ${items.length}, Pages created: ${pages.length}`);
+
+//   const fmtLocal = (n) =>
+//     "AED " +
+//     Number(n).toLocaleString("en-AE", {
+//       minimumFractionDigits: 2,
+//       maximumFractionDigits: 2,
+//     });
+
+//   const bankDetails = [
+//     ["Bank Name", "National Bank of Ras Al-Khaimah"],
+//     ["Account Name", "AMARAA FZCO"],
+//     ["Account Number", "0333479509001"],
+//     ["SWIFT Code", "NRAKAEAK"],
+//     ["IBAN", "AE25 0400 0003 3347 9509 001"],
+//     ["Currency", "AED"],
+//     ["Payment Code", "GDS"],
+//     ["Purpose of Payment", `Payment received against invoice No. ${invNo}`],
+//   ];
+
+//   const logoBlock = logoB64
+//     ? `<img src="${logoB64}" style="height:52px;object-fit:contain;filter:brightness(0) invert(1);-webkit-filter:brightness(0) invert(1);" alt="Amaraa"/>`
+//     : `<span style="font-family:'Cormorant Garamond',Georgia,serif;font-size:22px;font-weight:700;letter-spacing:4px;color:#fff;">AMARAA <span style="font-size:9px;letter-spacing:5px;opacity:.6;">JEWELRY</span></span>`;
+
+//   const header = (label, pageNum, totalPages) => `
+//     <div style="background:#0D1B4B;padding:18px 28px;display:flex;justify-content:space-between;align-items:center;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
+//       ${logoBlock}
+//       <div style="text-align:right;font-size:11px;color:rgba(255,255,255,.82);">
+//         <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:15px;letter-spacing:2px;color:#A8B8E8;font-weight:600;margin-bottom:3px;">${label}</div>
+//         <div>No. ${invNo}</div>
+//         <div>Date: ${formatDate(invDate)}</div>
+//         <div style="font-size:9px;opacity:.55;margin-top:2px;">TRN: ${trn}</div>
+//       </div>
+//     </div>
+//     <div style="height:3px;background:linear-gradient(90deg,#2B3A7A,#A8B8E8,#2B3A7A);-webkit-print-color-adjust:exact;print-color-adjust:exact;"></div>`;
+
+//   const tableHead = () => `
+//     <thead>
+//       <tr style="background:#EEF1FA;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
+//         <th style="font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:#2B3A7A;padding:7px 8px;font-weight:600;text-align:left;width:6%;">Sl.</th>
+//         <th style="font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:#2B3A7A;padding:7px 8px;font-weight:600;text-align:left;width:30%;">Item Name / Code</th>
+//         <th style="font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:#2B3A7A;padding:7px 8px;font-weight:600;text-align:left;width:8%;">Qty</th>
+//         <th style="font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:#2B3A7A;padding:7px 8px;font-weight:600;text-align:left;width:12%;">GWT</th>
+//         <th style="font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:#2B3A7A;padding:7px 8px;font-weight:600;text-align:left;width:12%;">Cts/Size</th>
+//         <th style="font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:#2B3A7A;padding:7px 8px;font-weight:600;text-align:left;width:14%;">Unit Price</th>
+//         <th style="font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:#2B3A7A;padding:7px 8px;font-weight:600;text-align:left;width:18%;">Amount (AED)</th>
+//       </tr>
+//     </thead>`;
+
+//   const tdStyle =
+//     "padding:6px 8px;border-bottom:1px solid #E8ECF5;font-size:11px;vertical-align:top;";
+
+//   const renderRows = (chunk, startIdx) =>
+//     chunk
+//       .map(
+//         (it, i) => `
+//         <tr>
+//           <td style="${tdStyle}text-align:left;color:#aaa;">${startIdx + i + 1}</td>
+//           <td style="${tdStyle}text-align:left;font-weight:600;color:#0D1B4B;">${it.itemCode || "—"}</td>
+//           <td style="${tdStyle}text-align:left;">${it.qty}</td>
+//           <td style="${tdStyle}text-align:left;">${it.GWT || "—"}</td>
+//           <td style="${tdStyle}text-align:left;">${it.cts || "—"}</td>
+//           <td style="${tdStyle}text-align:left;">${it.price ? "AED " + Number(it.price).toFixed(2) : "—"}</td>
+//           <td style="${tdStyle}text-align:left;font-weight:600;color:#0D1B4B;">${it.price ? "AED " + (it.qty * Number(it.price)).toFixed(2) : "—"}</td>
+//         </tr>`,
+//       )
+//       .join("");
+
+//   const totalsBlock = () => `
+//     <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:20px;margin-top:18px;flex-wrap:wrap;">
+//       <div style="flex:1;min-width:250px;">
+//         <div style="font-size:8px;letter-spacing:2px;text-transform:uppercase;color:#2B3A7A;margin-bottom:4px;">Amount in Words</div>
+//         <div style="background:#EEF1FA;border-radius:6px;padding:8px 12px;font-style:italic;font-size:11px;color:#0D1B4B;margin-bottom:10px;-webkit-print-color-adjust:exact;print-color-adjust:exact;">${grandToWords(grand)}</div>
+//         ${notes ? `<div style="font-size:10px;font-style:italic;color:#c00;margin-bottom:10px;">${notes}</div>` : ""}
+//         <div style="background:#EEF1FA;border-radius:8px;border:1px solid #C5CDE8;padding:12px 14px;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
+//           <div style="font-size:8px;letter-spacing:2px;text-transform:uppercase;color:#2B3A7A;font-weight:700;margin-bottom:8px;">Bank Details</div>
+//           <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px 16px;">
+//             ${bankDetails
+//               .map(
+//                 ([l, v]) => `
+//               <div>
+//                 <div style="font-size:8px;color:#999;">${l}</div>
+//                 <div style="font-size:10px;font-weight:600;color:#0D1B4B;">${v}</div>
+//               </div>`,
+//               )
+//               .join("")}
+//           </div>
+//         </div>
+//       </div>
+//       <div style="width:210px;background:#EEF1FA;border-radius:8px;border:1px solid #C5CDE8;padding:12px 14px;font-size:11px;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
+//         <div style="display:flex;justify-content:space-between;padding:3px 0;color:#666;"><span>Subtotal</span><span>${fmtLocal(subtotal)}</span></div>
+//         ${discount > 0 ? `<div style="display:flex;justify-content:space-between;padding:3px 0;color:#666;"><span>Discount</span><span>${fmtLocal(discount)}</span></div>` : ""}
+//         <div style="display:flex;justify-content:space-between;padding:3px 0;color:#666;"><span>VAT ${vatPct}%</span><span>${fmtLocal(vat)}</span></div>
+//         <div style="display:flex;justify-content:space-between;padding:3px 0;color:#666;"><span>Paid Amount</span><span>${fmtLocal(paidAmount || 0)}</span></div>
+//         <div style="display:flex;justify-content:space-between;padding:7px 0 3px;font-weight:700;font-size:13px;color:#0D1B4B;border-top:1px solid #C5CDE8;margin-top:4px;"><span>Remaining</span><span>${fmtLocal(remainingAmount)}</span></div>
+//       </div>
+//     </div>
+//     <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:30px;margin-bottom:4px;">
+//       <div style="text-align:center;">
+//         <div style="height:44px;"></div>
+//         <div style="border-top:1px solid #ccc;width:150px;padding-top:4px;font-size:9px;color:#aaa;">Receiver's Sign</div>
+//       </div>
+//       <div style="text-align:center;">
+//         ${stampB64 ? `<img src="${stampB64}" style="width:90px;height:90px;object-fit:contain;opacity:.9;" alt="Stamp"/>` : ""}
+//       </div>
+//       <div style="text-align:center;">
+//         ${sigB64 ? `<img src="${sigB64}" style="width:120px;height:54px;object-fit:contain;display:block;margin:0 auto 4px;" alt="Signature"/>` : ""}
+//         <div style="border-top:1px solid #ccc;width:150px;padding-top:4px;font-size:9px;color:#aaa;margin:0 auto;">AMARAA JEWELRY</div>
+//       </div>
+//     </div>`;
+
+//   const footerBlock = () => `
+//     <div style="background:#EEF1FA;border-top:1px solid #C5CDE8;padding:12px 28px;display:grid;grid-template-columns:1fr 1fr;gap:16px;font-size:10px;color:#666;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
+//       <div>
+//         <div style="font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:#2B3A7A;margin-bottom:3px;">Contact</div>
+//         Tel: +971 543969425 / +971 521866038<br/>
+//         WhatsApp: +971 54 396 9425<br/>
+//         info@amaraa.com · www.amaraa.com
+//       </div>
+//       <div>
+//         <div style="font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:#2B3A7A;margin-bottom:3px;">Registered Address</div>
+//         Almas Tower, Plot No JLT-PH1-A0<br/>
+//         Jumeirah Lake Towers, Dubai, UAE<br/>
+//         License: DMCC-896920
+//       </div>
+//     </div>`;
+
+//   // Only create pages that actually have items
+//   const pagesHTML = pages
+//     .filter(
+//       (page) => page.length > 0 || (page.length === 0 && pages.length === 1),
+//     ) // Filter out empty pages unless it's the only page
+//     .map((chunk, pageIndex) => {
+//       const isFirst = pageIndex === 0;
+//       const isLast = pageIndex === pages.length - 1;
+
+//       // Calculate starting serial number correctly
+//       let startIdx = 0;
+//       if (pageIndex === 0) {
+//         startIdx = 0;
+//       } else {
+//         startIdx =
+//           FIRST_PAGE_MAX_ITEMS + (pageIndex - 1) * NEXT_PAGES_MAX_ITEMS;
+//       }
+
+//       // Only show "Continued" label if there are actually multiple pages
+//       const label =
+//         pages.length > 1 && !isFirst
+//           ? `${invType.toUpperCase()} (Continued)`
+//           : invType.toUpperCase();
+
+//       // Only show "Continued on next page" if this is NOT the last page AND there are more pages
+//       const showContinued = !isLast && pages.length > 1;
+
+//       return `
+// <div class="page" style="page-break-after: ${isLast ? "auto" : "always"}; break-after: ${isLast ? "auto" : "page"};">
+//   ${header(label, pageIndex + 1, pages.length)}
+//   <div style="padding:18px 28px 20px;">
+//     ${
+//       isFirst
+//         ? `
+//     <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:16px;">
+//       <div>
+//         <div style="font-size:8px;letter-spacing:2px;text-transform:uppercase;color:#2B3A7A;margin-bottom:4px;">From</div>
+//         <div style="font-size:13px;font-weight:500;color:#0D1B4B;">Amaraa FZCO</div>
+//         <div style="font-size:10.5px;color:#555;margin-top:3px;line-height:1.7;">Almas 25-J-04, Almas Tower<br/>JLT-PH1-A0, Jumeirah Lake Towers<br/>Dubai, United Arab Emirates<br/>Tel: +971 543969425 | +971 521866038<br/>info@amaraa.com · www.amaraa.com<br/>HS CODE 7113.19</div>
+//       </div>
+//       <div>
+//         <div style="font-size:8px;letter-spacing:2px;text-transform:uppercase;color:#2B3A7A;margin-bottom:4px;">To</div>
+//         <div style="font-size:13px;font-weight:500;color:#0D1B4B;">${custName || "—"}</div>
+//         <div style="font-size:10.5px;color:#555;margin-top:3px;line-height:1.7;">
+//           ${custAddr ? custAddr + "<br/>" : ""}
+//           ${custTrn ? "TRN: " + custTrn + "<br/>" : ""}
+//           ${[custPhone, custEmail].filter(Boolean).join(" | ")}
+//         </div>
+//       </div>
+//     </div>
+//     <div style="font-size:12px;font-weight:500;color:#2B3A7A;margin-bottom:10px;">✦ Lab Grown Diamonds</div>
+//     `
+//         : ""
+//     }
+//     <table style="width:100%;border-collapse:collapse;margin-bottom:4px;table-layout:fixed;">
+//       ${tableHead()}
+//       <tbody>${chunk.length > 0 ? renderRows(chunk, startIdx) : `<tr><td colspan="7" style="padding:40px;text-align:center;color:#999;">No items to display</td></tr>`}</tbody>
+//     </table>
+//     ${showContinued ? `<div style="text-align:center;font-size:10px;color:#bbb;font-style:italic;padding:10px 0 2px;">*** Continued on next page ***</div>` : ""}
+//     ${isLast ? totalsBlock() : ""}
+//   </div>
+//   ${isLast ? footerBlock() : ""}
+// </div>`;
+//     })
+//     .join("");
+
+//   return `<!DOCTYPE html>
+// <html>
+// <head>
+// <meta charset="UTF-8"/>
+// <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no"/>
+// <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+// <title>Amaraa Invoice ${invNo}</title>
+// <style>
+//   * {
+//     box-sizing: border-box;
+//     margin: 0;
+//     padding: 0;
+//   }
+
+//   body {
+//     font-family: 'DM Sans', Arial, sans-serif;
+//     font-size: 12px;
+//     color: #333;
+//     background: #fff;
+//     margin: 0;
+//     padding: 0;
+//     display: flex;
+//     justify-content: center;
+//     align-items: center;
+//     width: 100%;
+//   }
+
+//   .print-container {
+//     width: 100%;
+//     max-width: 210mm;
+//     margin: 0 auto;
+//     background: #fff;
+//   }
+
+//   .page {
+//     width: 100%;
+//     max-width: 210mm;
+//     min-height: 297mm;
+//     margin: 0 auto;
+//     background: #fff;
+//     position: relative;
+//     page-break-after: always;
+//     break-after: page;
+//     box-sizing: border-box;
+//     overflow-x: hidden;
+//   }
+
+//   .page:last-child {
+//     page-break-after: auto;
+//     break-after: auto;
+//   }
+
+//   .page > div {
+//     max-width: 100%;
+//     overflow-x: hidden;
+//   }
+
+//   table {
+//     width: 100%;
+//     word-wrap: break-word;
+//     table-layout: fixed;
+//   }
+
+//   td, th {
+//     word-wrap: break-word;
+//     overflow-wrap: break-word;
+//   }
+
+//   @media print {
+//     body {
+//       margin: 0;
+//       padding: 0;
+//       background: #fff;
+//       width: 100%;
+//     }
+
+//     .print-container {
+//       margin: 0;
+//       padding: 0;
+//       width: 100%;
+//       max-width: 100%;
+//     }
+
+//     .page {
+//       margin: 0;
+//       padding: 0;
+//       width: 100%;
+//       max-width: 100%;
+//       page-break-after: always;
+//       break-after: page;
+//       box-shadow: none;
+//     }
+
+//     .page:last-child {
+//       page-break-after: auto;
+//       break-after: auto;
+//     }
+
+//     * {
+//       -webkit-print-color-adjust: exact !important;
+//       print-color-adjust: exact !important;
+//     }
+
+//     /* Hide URL, date, time, page numbers in print */
+//     @page {
+//       margin: 0;
+//       size: A4;
+//     }
+
+//     /* Remove default print headers and footers */
+//     @page :header {
+//       display: none;
+//     }
+
+//     @page :footer {
+//       display: none;
+//     }
+//   }
+
+//   @media screen {
+//     body {
+//       background: #e0e0e0;
+//       padding: 20px;
+//     }
+
+//     .print-container {
+//       box-shadow: 0 0 20px rgba(0,0,0,0.2);
+//     }
+
+//     .page {
+//       box-shadow: 0 0 10px rgba(0,0,0,0.1);
+//       margin-bottom: 20px;
+//     }
+//   }
+// </style>
+// </head>
+// <body>
+// <div class="print-container">
+// ${pagesHTML}
+// </div>
+// <script>
+//   (function() {
+//     setTimeout(function() {
+//       window.print();
+//       var isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+//       if (!isSafari) {
+//         setTimeout(function() {
+//           window.close();
+//         }, 1000);
+//       }
+//     }, 500);
+//   })();
+// </script>
+// </body>
+// </html>`;
+// };
+
+// /* ── UI primitives ── */
+// const Label = ({ children }) => (
+//   <label className="block text-[11px] tracking-wider text-blue-800 mb-1 uppercase font-medium">
+//     {children}
+//   </label>
+// );
+// const Input = ({ className = "", ...props }) => (
+//   <input
+//     className={`w-full border border-blue-200 rounded-lg px-3 py-2 text-sm bg-white text-gray-800 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all placeholder:text-gray-300 ${className}`}
+//     {...props}
+//   />
+// );
+// const Select = ({ children, ...props }) => (
+//   <select
+//     className="w-full border border-blue-200 rounded-lg px-3 py-2 text-sm bg-white text-gray-800 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all"
+//     {...props}
+//   >
+//     {children}
+//   </select>
+// );
+// const SectionTitle = ({ children }) => (
+//   <div className="text-[10px] tracking-[3px] uppercase text-blue-700 font-semibold mt-6 mb-3 flex items-center gap-2">
+//     <span className="text-blue-400">✦</span> {children}
+//     <span className="flex-1 h-px bg-blue-100 ml-1"></span>
+//   </div>
+// );
+
+// /* ══════════════════════════════════════════════════════════════ */
+// export default function AmaraaInvoiceGenerator() {
+//   const [invNo, setInvNo] = useState("0066");
+//   const [invDate, setInvDate] = useState(today());
+//   const [invType, setInvType] = useState("Tax Cash Invoice");
+//   const [trn, setTrn] = useState("104149856700003");
+//   const [custName, setCustName] = useState("");
+//   const [custAddr, setCustAddr] = useState("");
+//   const [custTrn, setCustTrn] = useState("");
+//   const [custPhone, setCustPhone] = useState("");
+//   const [custEmail, setCustEmail] = useState("");
+//   const [vatPct, setVatPct] = useState(5);
+//   const [discount, setDiscount] = useState(0);
+//   const [notes, setNotes] = useState("");
+//   const [items, setItems] = useState([newItem()]);
+//   const [showInvoice, setShowInvoice] = useState(false);
+//   const [paidAmount, setPaidAmount] = useState(0);
+//   const [downloading, setDownloading] = useState(false);
+
+//   const [logoB64, setLogoB64] = useState("");
+//   const [stampB64, setStampB64] = useState("");
+//   const [sigB64, setSigB64] = useState("");
+
+//   /* ── Convert local assets to base64 on mount ── */
+//   useEffect(() => {
+//     toBase64(whitelogoSrc)
+//       .then(setLogoB64)
+//       .catch(() => {});
+//     toBase64(stampSrc)
+//       .then(setStampB64)
+//       .catch(() => {});
+//     toBase64(signatureSrc)
+//       .then(setSigB64)
+//       .catch(() => {});
+//   }, []);
+
+//   const addItem = () => setItems((p) => [...p, newItem()]);
+//   const removeItem = (id) => setItems((p) => p.filter((it) => it.id !== id));
+//   const updateItem = (id, field, value) =>
+//     setItems((p) =>
+//       p.map((it) => (it.id === id ? { ...it, [field]: value } : it)),
+//     );
+
+//   const subtotal = items.reduce(
+//     (s, it) => s + (it.qty || 0) * (Number(it.price) || 0),
+//     0,
+//   );
+//   const discounted = Math.max(0, subtotal - (discount || 0));
+//   const vat = (discounted * (vatPct || 0)) / 100;
+//   const grand = discounted + vat;
+//   const remainingAmount = Math.max(0, grand - paidAmount);
+
+//   const clearAll = () => {
+//     setCustName("");
+//     setCustAddr("");
+//     setCustTrn("");
+//     setCustPhone("");
+//     setCustEmail("");
+//     setNotes("");
+//     setDiscount(0);
+//     setPaidAmount(0);
+//     setItems([newItem()]);
+//     setShowInvoice(false);
+//   };
+
+//   /* ── PDF generation using native print (preserves design perfectly) ── */
+//   const downloadPDF = useCallback(() => {
+//     if (downloading) return;
+//     setDownloading(true);
+
+//     try {
+//       const html = buildPrintHTML({
+//         invNo,
+//         invDate,
+//         invType,
+//         trn,
+//         custName,
+//         custAddr,
+//         custTrn,
+//         custPhone,
+//         custEmail,
+//         items,
+//         vatPct,
+//         discount,
+//         subtotal,
+//         vat,
+//         grand,
+//         notes,
+//         paidAmount,
+//         remainingAmount,
+//         logoB64,
+//         stampB64,
+//         sigB64,
+//       });
+
+//       // Create a new window for printing
+//       const printWindow = window.open(
+//         "",
+//         "_blank",
+//         "width=800,height=600,toolbar=yes,menubar=yes",
+//       );
+//       if (!printWindow) {
+//         alert(
+//           "Please allow popups to generate PDF. Check your browser settings.",
+//         );
+//         setDownloading(false);
+//         return;
+//       }
+
+//       printWindow.document.write(html);
+//       printWindow.document.close();
+
+//       // Clean up
+//       setTimeout(() => {
+//         setDownloading(false);
+//       }, 3000);
+//     } catch (error) {
+//       console.error("PDF generation failed:", error);
+//       alert("Failed to generate PDF. Please try again.");
+//       setDownloading(false);
+//     }
+//   }, [
+//     downloading,
+//     invNo,
+//     invDate,
+//     invType,
+//     trn,
+//     custName,
+//     custAddr,
+//     custTrn,
+//     custPhone,
+//     custEmail,
+//     items,
+//     vatPct,
+//     discount,
+//     subtotal,
+//     vat,
+//     grand,
+//     notes,
+//     paidAmount,
+//     remainingAmount,
+//     logoB64,
+//     stampB64,
+//     sigB64,
+//   ]);
+
+//   // Only create second page if items exceed first page limit
+
+//   /* ══════════════════════════════ FORM VIEW ══════════════════════════════ */
+//   if (!showInvoice)
+//     return (
+//       <div className="min-h-screen font-sans bg-[#d4d4d4]">
+//         <Nav />
+//         <div className="max-w-4xl mx-auto p-6">
+//           <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
+//             <div className="bg-[#0D1B4B] px-8 py-6 flex items-center justify-between">
+//               <div className="h-16">
+//                 {logoB64 ? (
+//                   <img
+//                     src={logoB64}
+//                     alt="Amaraa"
+//                     className="h-full object-contain"
+//                     style={{ filter: "brightness(0) invert(1)" }}
+//                   />
+//                 ) : (
+//                   <span className="text-white font-serif text-2xl tracking-widest">
+//                     AMARAA JEWELRY
+//                   </span>
+//                 )}
+//               </div>
+//               <div className="text-right">
+//                 <div className="text-blue-200 text-xs tracking-[3px] uppercase">
+//                   Invoice Generator
+//                 </div>
+//                 <div className="text-white/50 text-[10px] mt-1">
+//                   Lab Grown Diamonds · Dubai, UAE
+//                 </div>
+//               </div>
+//             </div>
+//             <div
+//               className="h-[3px]"
+//               style={{
+//                 background: "linear-gradient(90deg,#2B3A7A,#A8B8E8,#2B3A7A)",
+//               }}
+//             />
+
+//             <div className="px-8 py-6">
+//               <SectionTitle>Invoice Details</SectionTitle>
+//               <div className="grid grid-cols-2 gap-3">
+//                 <div>
+//                   <Label>Invoice No.</Label>
+//                   <Input
+//                     value={invNo}
+//                     onChange={(e) => setInvNo(e.target.value)}
+//                   />
+//                 </div>
+//                 <div>
+//                   <Label>Date</Label>
+//                   <Input
+//                     type="date"
+//                     value={invDate}
+//                     onChange={(e) => setInvDate(e.target.value)}
+//                   />
+//                 </div>
+//               </div>
+//               <div className="grid grid-cols-2 gap-3 mt-3">
+//                 <div>
+//                   <Label>Invoice Type</Label>
+//                   <Select
+//                     value={invType}
+//                     onChange={(e) => setInvType(e.target.value)}
+//                   >
+//                     <option>Invoice</option>
+//                     <option>Tax Cash Invoice</option>
+//                     <option>Tax Invoice</option>
+//                     <option>Memo</option>
+//                     <option>Proforma Invoice</option>
+//                   </Select>
+//                 </div>
+//                 <div>
+//                   <Label>TRN No.</Label>
+//                   <Input value={trn} onChange={(e) => setTrn(e.target.value)} />
+//                 </div>
+//               </div>
+
+//               <SectionTitle>Customer Info</SectionTitle>
+//               <div>
+//                 <Label>Customer Name</Label>
+//                 <Input
+//                   value={custName}
+//                   placeholder="e.g. Dana"
+//                   onChange={(e) => setCustName(e.target.value)}
+//                 />
+//               </div>
+//               <div className="grid grid-cols-2 gap-3 mt-3">
+//                 <div>
+//                   <Label>Address</Label>
+//                   <Input
+//                     value={custAddr}
+//                     placeholder="Dubai, UAE"
+//                     onChange={(e) => setCustAddr(e.target.value)}
+//                   />
+//                 </div>
+//                 <div>
+//                   <Label>Customer TRN</Label>
+//                   <Input
+//                     value={custTrn}
+//                     placeholder="Optional"
+//                     onChange={(e) => setCustTrn(e.target.value)}
+//                   />
+//                 </div>
+//               </div>
+//               <div className="grid grid-cols-2 gap-3 mt-3">
+//                 <div>
+//                   <Label>Phone</Label>
+//                   <Input
+//                     value={custPhone}
+//                     placeholder="+971..."
+//                     onChange={(e) => setCustPhone(e.target.value)}
+//                   />
+//                 </div>
+//                 <div>
+//                   <Label>Email</Label>
+//                   <Input
+//                     type="email"
+//                     value={custEmail}
+//                     placeholder="customer@email.com"
+//                     onChange={(e) => setCustEmail(e.target.value)}
+//                   />
+//                 </div>
+//               </div>
+
+//               <SectionTitle>Items</SectionTitle>
+//               <div className="overflow-x-auto rounded-xl border border-blue-100">
+//                 <table className="w-full text-xs">
+//                   <thead>
+//                     <tr className="bg-blue-50">
+//                       {[
+//                         "Item Name / Code",
+//                         "Qty",
+//                         "GWT",
+//                         "Cts/Size",
+//                         "Price (AED)",
+//                         "",
+//                       ].map((h) => (
+//                         <th
+//                           key={h}
+//                           className="text-left text-[9px] tracking-widest uppercase text-blue-700 py-2 px-3 font-medium"
+//                         >
+//                           {h}
+//                         </th>
+//                       ))}
+//                     </tr>
+//                   </thead>
+//                   <tbody>
+//                     {items.map((it) => (
+//                       <tr key={it.id} className="border-t border-blue-50">
+//                         <td className="py-1 px-1">
+//                           <Input
+//                             className="text-xs py-1"
+//                             value={it.itemCode}
+//                             placeholder="e.g. AM-481"
+//                             onChange={(e) =>
+//                               updateItem(it.id, "itemCode", e.target.value)
+//                             }
+//                           />
+//                         </td>
+//                         <td className="py-1 px-1 w-14">
+//                           <Input
+//                             type="number"
+//                             className="text-xs py-1 w-14"
+//                             value={it.qty}
+//                             min={1}
+//                             onChange={(e) =>
+//                               updateItem(it.id, "qty", Number(e.target.value))
+//                             }
+//                           />
+//                         </td>
+//                         <td className="py-1 px-1 w-16">
+//                           <Input
+//                             className="text-xs py-1 w-16"
+//                             value={it.GWT}
+//                             placeholder="0.0g"
+//                             onChange={(e) =>
+//                               updateItem(it.id, "GWT", e.target.value)
+//                             }
+//                           />
+//                         </td>
+//                         <td className="py-1 px-1 w-16">
+//                           <Input
+//                             className="text-xs py-1 w-16"
+//                             value={it.cts}
+//                             placeholder="5.06"
+//                             onChange={(e) =>
+//                               updateItem(it.id, "cts", e.target.value)
+//                             }
+//                           />
+//                         </td>
+//                         <td className="py-1 px-1 w-24">
+//                           <Input
+//                             type="number"
+//                             className="text-xs py-1 w-24"
+//                             value={it.price}
+//                             placeholder="0"
+//                             onChange={(e) =>
+//                               updateItem(it.id, "price", e.target.value)
+//                             }
+//                           />
+//                         </td>
+//                         <td className="py-1 px-1">
+//                           <button
+//                             onClick={() => removeItem(it.id)}
+//                             className="text-gray-300 hover:text-red-400 transition-colors text-lg px-1"
+//                           >
+//                             ×
+//                           </button>
+//                         </td>
+//                       </tr>
+//                     ))}
+//                   </tbody>
+//                 </table>
+//               </div>
+//               <button
+//                 onClick={addItem}
+//                 className="mt-3 border border-dashed border-blue-300 text-blue-600 text-xs px-4 py-2 rounded-lg hover:bg-blue-600 hover:text-white transition-all"
+//               >
+//                 + Add Item
+//               </button>
+
+//               <SectionTitle>Totals & Payment</SectionTitle>
+//               <div className="grid grid-cols-2 gap-3">
+//                 <div>
+//                   <Label>VAT %</Label>
+//                   <Input
+//                     type="number"
+//                     value={vatPct}
+//                     min={0}
+//                     max={100}
+//                     onChange={(e) => setVatPct(Number(e.target.value))}
+//                   />
+//                 </div>
+//                 <div>
+//                   <Label>Discount (AED)</Label>
+//                   <Input
+//                     type="number"
+//                     value={discount}
+//                     min={0}
+//                     onChange={(e) => setDiscount(Number(e.target.value))}
+//                   />
+//                 </div>
+//               </div>
+//               <div className="grid grid-cols-2 gap-3 mt-3">
+//                 <div>
+//                   <Label>Paid Amount (AED)</Label>
+//                   <Input
+//                     type="number"
+//                     value={paidAmount}
+//                     min={0}
+//                     onChange={(e) => setPaidAmount(Number(e.target.value))}
+//                   />
+//                 </div>
+//                 <div>
+//                   <Label>Remaining Amount</Label>
+//                   <div className="w-full border border-blue-200 rounded-lg px-3 py-2 text-sm bg-blue-50 text-[#0D1B4B] font-medium">
+//                     {fmt(remainingAmount)}
+//                   </div>
+//                 </div>
+//               </div>
+//               <div className="mt-4 bg-blue-50 rounded-xl p-4 space-y-1">
+//                 {[
+//                   ["Subtotal", fmt(subtotal)],
+//                   ["Discount", fmt(discount || 0)],
+//                   [`VAT ${vatPct}%`, fmt(vat)],
+//                 ].map(([l, v]) => (
+//                   <div
+//                     key={l}
+//                     className="flex justify-between text-sm text-gray-500"
+//                   >
+//                     <span>{l}</span>
+//                     <span>{v}</span>
+//                   </div>
+//                 ))}
+//                 <div className="flex justify-between text-base font-semibold text-[#0D1B4B] border-t border-blue-200 pt-2 mt-2">
+//                   <span>Grand Total</span>
+//                   <span>{fmt(grand)}</span>
+//                 </div>
+//               </div>
+
+//               <SectionTitle>Notes</SectionTitle>
+//               <textarea
+//                 className="w-full border border-blue-200 rounded-lg px-3 py-2 text-sm bg-white text-gray-800 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all resize-none"
+//                 rows={2}
+//                 placeholder="Additional notes..."
+//                 value={notes}
+//                 onChange={(e) => setNotes(e.target.value)}
+//               />
+
+//               <div className="flex gap-3 mt-6">
+//                 <button
+//                   onClick={clearAll}
+//                   className="flex-1 py-3 rounded-xl border border-blue-200 text-gray-500 text-sm hover:border-blue-400 hover:text-blue-700 transition-all"
+//                 >
+//                   Clear
+//                 </button>
+//                 <button
+//                   onClick={() => setShowInvoice(true)}
+//                   className="flex-[2] py-3 rounded-xl text-white text-sm font-medium transition-all flex items-center justify-center gap-2 hover:opacity-90"
+//                   style={{
+//                     background: "linear-gradient(135deg,#0D1B4B,#2B3A7A)",
+//                   }}
+//                 >
+//                   <span>Generate Invoice</span>
+//                   <span className="text-blue-300">✦</span>
+//                 </button>
+//               </div>
+//             </div>
+//           </div>
+//         </div>
+//       </div>
+//     );
+
+//   /* ══════════════════════════════ PREVIEW VIEW ══════════════════════════════ */
+//   const FIRST_PAGE_MAX = 13;
+//   const NEXT_PAGE_MAX = 18;
+//   const previewPages = [items.slice(0, FIRST_PAGE_MAX)];
+//   let pi = FIRST_PAGE_MAX;
+//   while (pi < items.length) {
+//     previewPages.push(items.slice(pi, pi + NEXT_PAGE_MAX));
+//     pi += NEXT_PAGE_MAX;
+//   }
+
+//   return (
+//     <div className="min-h-screen font-sans bg-[#d4d4d4]">
+//       <Nav />
+//       <div className="max-w-5xl mx-auto px-4 py-6">
+//         {/* Action bar */}
+//         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mb-6">
+//           <button
+//             onClick={() => setShowInvoice(false)}
+//             className="flex items-center gap-2 text-sm text-blue-700 hover:text-blue-800 px-4 py-2 rounded-lg bg-white/80 shadow-sm cursor-pointer w-full sm:w-auto justify-center transition-all"
+//           >
+//             ← Back to Form
+//           </button>
+//           <button
+//             onClick={downloadPDF}
+//             disabled={downloading}
+//             className="px-6 py-2.5 rounded-lg text-white text-sm font-semibold transition-all flex items-center gap-2 disabled:opacity-60 w-full sm:w-auto justify-center shadow-md hover:shadow-lg hover:opacity-90"
+//             style={{ background: "linear-gradient(135deg,#0D1B4B,#2B3A7A)" }}
+//           >
+//             {downloading ? (
+//               <>
+//                 <svg
+//                   className="animate-spin w-4 h-4"
+//                   viewBox="0 0 24 24"
+//                   fill="none"
+//                   stroke="currentColor"
+//                   strokeWidth="2.5"
+//                 >
+//                   <circle
+//                     cx="12"
+//                     cy="12"
+//                     r="10"
+//                     stroke="currentColor"
+//                     strokeOpacity="0.25"
+//                     fill="none"
+//                   />
+//                   <path d="M12 2a10 10 0 0 1 10 10" strokeLinecap="round" />
+//                 </svg>
+//                 <span>Preparing PDF…</span>
+//               </>
+//             ) : (
+//               <>
+//                 <svg
+//                   className="w-4 h-4"
+//                   fill="none"
+//                   stroke="currentColor"
+//                   strokeWidth="2"
+//                   viewBox="0 0 24 24"
+//                 >
+//                   <path
+//                     strokeLinecap="round"
+//                     strokeLinejoin="round"
+//                     d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"
+//                   />
+//                 </svg>
+//                 <span>Download PDF</span>
+//               </>
+//             )}
+//           </button>
+//         </div>
+
+//         {/* Invoice pages preview */}
+//         <div className="flex flex-col items-center gap-8">
+//           {previewPages.map((chunk, pageIdx) => {
+//             const isFirst = pageIdx === 0;
+//             const isLast = pageIdx === previewPages.length - 1;
+//             const startIdx = isFirst
+//               ? 0
+//               : FIRST_PAGE_MAX + (pageIdx - 1) * NEXT_PAGE_MAX;
+//             const typeLabel =
+//               previewPages.length > 1
+//                 ? `${invType.toUpperCase()}${isFirst ? "" : " (Continued)"}`
+//                 : invType.toUpperCase();
+
+//             return (
+//               <div
+//                 key={pageIdx}
+//                 className="bg-white border border-blue-100 shadow-2xl overflow-hidden"
+//                 style={{ width: "794px" }}
+//               >
+//                 {/* Header */}
+//                 <div className="bg-[#0D1B4B] text-white px-8 py-5 flex justify-between items-center">
+//                   <div className="h-14">
+//                     {logoB64 ? (
+//                       <img
+//                         src={logoB64}
+//                         alt="Amaraa"
+//                         className="h-full object-contain"
+//                         style={{ filter: "brightness(0) invert(1)" }}
+//                       />
+//                     ) : (
+//                       <span className="text-white font-serif text-2xl tracking-widest">
+//                         AMARAA
+//                       </span>
+//                     )}
+//                   </div>
+//                   <div className="text-right text-xs opacity-85">
+//                     <div
+//                       className="text-blue-200 text-base font-semibold tracking-widest"
+//                       style={{ fontFamily: "'Cormorant Garamond',serif" }}
+//                     >
+//                       {typeLabel}
+//                     </div>
+//                     <div>No. {invNo}</div>
+//                     <div>Date: {formatDate(invDate)}</div>
+//                     <div className="text-[10px] mt-1 opacity-60">
+//                       TRN: {trn}
+//                     </div>
+//                     {previewPages.length > 1 && (
+//                       <div className="text-[9px] mt-1 opacity-50">
+//                         Page {pageIdx + 1} of {previewPages.length}
+//                       </div>
+//                     )}
+//                   </div>
+//                 </div>
+//                 <div
+//                   className="h-[3px]"
+//                   style={{
+//                     background:
+//                       "linear-gradient(90deg,#2B3A7A,#A8B8E8,#2B3A7A)",
+//                   }}
+//                 />
+
+//                 <div className="px-8 py-5">
+//                   {/* From / To — first page only */}
+//                   {isFirst && (
+//                     <>
+//                       <div className="grid grid-cols-2 gap-6 mb-5">
+//                         <div>
+//                           <div className="text-[9px] tracking-[2px] uppercase text-blue-700 mb-1">
+//                             From
+//                           </div>
+//                           <div className="text-sm font-medium text-[#0D1B4B]">
+//                             Amaraa FZCO
+//                           </div>
+//                           <div className="text-xs text-gray-500 mt-1 leading-relaxed">
+//                             Almas 25-J-04, Almas Tower
+//                             <br />
+//                             JLT-PH1-A0, Jumeirah Lake Towers
+//                             <br />
+//                             Dubai, United Arab Emirates
+//                             <br />
+//                             Tel: +971 543969425 | +971 521866038
+//                             <br />
+//                             info@amaraa.com · www.amaraa.com
+//                             <br />
+//                             HS CODE 7113.19
+//                           </div>
+//                         </div>
+//                         <div>
+//                           <div className="text-[9px] tracking-[2px] uppercase text-blue-700 mb-1">
+//                             To
+//                           </div>
+//                           <div className="text-sm font-medium text-[#0D1B4B]">
+//                             {custName || "—"}
+//                           </div>
+//                           <div className="text-xs text-gray-500 mt-1 leading-relaxed">
+//                             {custAddr && (
+//                               <>
+//                                 {custAddr}
+//                                 <br />
+//                               </>
+//                             )}
+//                             {custTrn && (
+//                               <>
+//                                 TRN: {custTrn}
+//                                 <br />
+//                               </>
+//                             )}
+//                             {[custPhone, custEmail].filter(Boolean).join(" | ")}
+//                           </div>
+//                         </div>
+//                       </div>
+//                       <div className="mb-3 text-sm font-medium text-blue-700">
+//                         ✦ Lab Grown Diamonds
+//                       </div>
+//                     </>
+//                   )}
+
+//                   {/* Items table */}
+//                   <div className="rounded-xl overflow-hidden border border-blue-100">
+//                     <table className="w-full text-xs">
+//                       <thead>
+//                         <tr className="bg-blue-50">
+//                           {[
+//                             "Sl.",
+//                             "Item Name / Code",
+//                             "Qty",
+//                             "GWT",
+//                             "Cts/Size",
+//                             "Unit Price",
+//                             "Amount (AED)",
+//                           ].map((h, i) => (
+//                             <th
+//                               key={h}
+//                               className={`text-[9px] tracking-wider uppercase text-blue-700 py-2 px-3 font-medium ${i > 1 ? "text-left" : "text-left"}`}
+//                             >
+//                               {h}
+//                             </th>
+//                           ))}
+//                         </tr>
+//                       </thead>
+//                       <tbody>
+//                         {chunk.map((it, i) => (
+//                           <tr
+//                             key={it.id}
+//                             className="border-t border-blue-50 hover:bg-blue-50/30 transition-colors"
+//                           >
+//                             <td className="py-2 px-3 text-gray-400">
+//                               {startIdx + i + 1}
+//                             </td>
+//                             <td className="py-2 px-3 text-gray-800 font-medium">
+//                               {it.itemCode || "—"}
+//                             </td>
+//                             <td className="py-2 px-3 text-left text-gray-600">
+//                               {it.qty}
+//                             </td>
+//                             <td className="py-2 px-3 text-left text-gray-600">
+//                               {it.GWT || "—"}
+//                             </td>
+//                             <td className="py-2 px-3 text-left text-gray-600">
+//                               {it.cts || "—"}
+//                             </td>
+//                             <td className="py-2 px-3 text-left text-gray-600">
+//                               {it.price
+//                                 ? "AED " + Number(it.price).toFixed(2)
+//                                 : "—"}
+//                             </td>
+//                             <td className="py-2 px-3 text-left font-semibold text-[#0D1B4B]">
+//                               {it.price
+//                                 ? "AED " +
+//                                   (it.qty * Number(it.price)).toFixed(2)
+//                                 : "—"}
+//                             </td>
+//                           </tr>
+//                         ))}
+//                       </tbody>
+//                     </table>
+//                   </div>
+
+//                   {!isLast && previewPages.length > 1 && (
+//                     <div className="text-center mt-4 text-xs text-gray-400 italic">
+//                       *** Continued on next page ***
+//                     </div>
+//                   )}
+
+//                   {/* Totals + bank + signatures — last page only */}
+//                   {isLast && (
+//                     <>
+//                       <div className="flex flex-wrap justify-between items-end gap-5 mt-5">
+//                         <div className="flex-1 min-w-0">
+//                           <div className="text-[9px] tracking-[2px] uppercase text-blue-700 mb-1">
+//                             Amount in Words
+//                           </div>
+//                           <div className="bg-blue-50 rounded-xl px-4 py-3 text-xs italic text-[#0D1B4B] leading-relaxed">
+//                             {grandToWords(grand)}
+//                           </div>
+//                           {notes && (
+//                             <div className="text-[11px] italic mt-2 text-[#c00]">
+//                               {notes}
+//                             </div>
+//                           )}
+//                         </div>
+//                         <div className="w-56 text-xs shrink-0 bg-blue-50 rounded-xl p-4">
+//                           <div className="flex justify-between py-1 text-gray-500">
+//                             <span>Subtotal</span>
+//                             <span>{fmt(subtotal)}</span>
+//                           </div>
+//                           {discount > 0 && (
+//                             <div className="flex justify-between py-1 text-gray-500">
+//                               <span>Discount</span>
+//                               <span>{fmt(discount)}</span>
+//                             </div>
+//                           )}
+//                           <div className="flex justify-between py-1 text-gray-500">
+//                             <span>VAT {vatPct}%</span>
+//                             <span>{fmt(vat)}</span>
+//                           </div>
+//                           <div className="flex justify-between py-1 text-gray-500">
+//                             <span>Paid Amount</span>
+//                             <span>{fmt(paidAmount)}</span>
+//                           </div>
+//                           <div className="flex justify-between py-2 font-bold text-[#0D1B4B] text-sm border-t border-blue-200 mt-1">
+//                             <span>Remaining</span>
+//                             <span>{fmt(remainingAmount)}</span>
+//                           </div>
+//                         </div>
+//                       </div>
+
+//                       <div className="mt-5 p-4 bg-blue-50 rounded-xl border border-blue-100">
+//                         <div className="text-[9px] tracking-[2px] uppercase text-blue-700 mb-3 font-semibold">
+//                           Bank Details
+//                         </div>
+//                         <div className="grid grid-cols-2 gap-x-6 gap-y-3 text-xs">
+//                           {[
+//                             ["Bank Name", "National Bank of Ras Al-Khaimah"],
+//                             ["Account Name", "AMARAA FZCO"],
+//                             ["Account Number", "0333479509001"],
+//                             ["SWIFT Code", "NRAKAEAK"],
+//                             ["IBAN", "AE25 0400 0003 3347 9509 001"],
+//                             ["Currency", "AED"],
+//                             ["Payment Code", "GDS"],
+//                             [
+//                               "Purpose of Payment",
+//                               `Payment received against invoice No. ${invNo}`,
+//                             ],
+//                           ].map(([label, val]) => (
+//                             <div key={label}>
+//                               <div className="text-gray-400 text-[10px]">
+//                                 {label}
+//                               </div>
+//                               <div className="font-medium text-[#0D1B4B]">
+//                                 {val}
+//                               </div>
+//                             </div>
+//                           ))}
+//                         </div>
+//                       </div>
+
+//                       <div className="flex justify-between items-end mt-8">
+//                         <div className="text-center">
+//                           <div className="h-12"></div>
+//                           <div className="border-t border-gray-200 w-36 pt-1 text-[10px] text-gray-400">
+//                             Receiver's Sign
+//                           </div>
+//                         </div>
+//                         <div className="flex flex-col items-center">
+//                           {stampB64 && (
+//                             <img
+//                               src={stampB64}
+//                               alt="Stamp"
+//                               className="w-24 h-24 object-contain opacity-90"
+//                             />
+//                           )}
+//                         </div>
+//                         <div className="flex flex-col items-center">
+//                           {sigB64 && (
+//                             <img
+//                               src={sigB64}
+//                               alt="Signature"
+//                               className="w-28 h-14 object-contain mb-1"
+//                             />
+//                           )}
+//                           <div className="border-t border-gray-200 w-36 pt-1 text-[10px] text-gray-400 text-center">
+//                             AMARAA JEWELRY
+//                           </div>
+//                         </div>
+//                       </div>
+//                     </>
+//                   )}
+//                 </div>
+
+//                 {/* Footer — last page only */}
+//                 {isLast && (
+//                   <div className="bg-blue-50 border-t border-blue-100 px-8 py-4 grid grid-cols-2 gap-4 text-xs text-gray-500">
+//                     <div>
+//                       <div className="text-[9px] tracking-[1.5px] uppercase text-blue-700 mb-1">
+//                         Contact
+//                       </div>
+//                       Tel: +971 543969425 / +971 521866038
+//                       <br />
+//                       WhatsApp: +971 54 396 9425
+//                       <br />
+//                       info@amaraa.com · www.amaraa.com
+//                     </div>
+//                     <div>
+//                       <div className="text-[9px] tracking-[1.5px] uppercase text-blue-700 mb-1">
+//                         Registered Address
+//                       </div>
+//                       Almas Tower, Plot No JLT-PH1-A0
+//                       <br />
+//                       Jumeirah Lake Towers, Dubai, UAE
+//                       <br />
+//                       License: DMCC-896920
+//                     </div>
+//                   </div>
+//                 )}
+
+//                 {previewPages.length > 1 && !isLast && (
+//                   <div className="text-center py-2 text-[10px] text-gray-400 bg-white border-t border-blue-50">
+//                     Page {pageIdx + 1} of {previewPages.length}
+//                   </div>
+//                 )}
+//               </div>
+//             );
+//           })}
+//         </div>
+//       </div>
+
+//       <style>{`
+//         @media (max-width: 860px)  { .flex.flex-col.items-center.gap-8 > div { transform:scale(0.88); transform-origin:center top; margin-bottom:-60px; } }
+//         @media (max-width: 760px)  { .flex.flex-col.items-center.gap-8 > div { transform:scale(0.76); transform-origin:center top; margin-bottom:-120px; } }
+//         @media (max-width: 650px)  { .flex.flex-col.items-center.gap-8 > div { transform:scale(0.64); transform-origin:center top; margin-bottom:-180px; } }
+//         @media (max-width: 540px)  { .flex.flex-col.items-center.gap-8 > div { transform:scale(0.52); transform-origin:center top; margin-bottom:-240px; } }
+//         @media (max-width: 430px)  { .flex.flex-col.items-center.gap-8 > div { transform:scale(0.42); transform-origin:center top; margin-bottom:-300px; } }
+//       `}</style>
+//     </div>
+//   );
+// }
 import { useState, useCallback, useEffect } from "react";
-// import logoSrc from "../../assets/images/logo.png";
-import whitelogoSrc from "../../assets/images/whitelogo.png";
+import logoSrc from "../../assets/images/logo.png";
 import stampSrc from "../../assets/images/stemp.png";
 import signatureSrc from "../../assets/images/signature.png";
 import Nav from "../components/Nav";
@@ -2972,13 +4399,69 @@ const toBase64 = (url) =>
     );
 
 /* ══════════════════════════════════════════════════════════════
-   BUILD PRINT HTML WITH PROPER WIDTH AND CENTERING
+   CONVERT LOGO TO WHITE VERSION FOR PDF
+   Since CSS filters don't work reliably in html2pdf.js,
+   we draw the logo onto a canvas with white color fill
 ══════════════════════════════════════════════════════════════ */
+const makeWhiteLogo = (base64DataUrl) =>
+  new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      const ctx = canvas.getContext("2d");
+
+      // Draw image
+      ctx.drawImage(img, 0, 0);
+
+      // Get pixel data and make non-transparent pixels white
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = imageData.data;
+      for (let i = 0; i < data.length; i += 4) {
+        if (data[i + 3] > 10) {
+          // non-transparent pixel
+          data[i] = 255; // R
+          data[i + 1] = 255; // G
+          data[i + 2] = 255; // B
+          // keep alpha
+        }
+      }
+      ctx.putImageData(imageData, 0, 0);
+      resolve(canvas.toDataURL("image/png"));
+    };
+    img.onerror = () => resolve(base64DataUrl); // fallback
+    img.src = base64DataUrl;
+  });
+
 /* ══════════════════════════════════════════════════════════════
-   BUILD PRINT HTML WITH CONDITIONAL PAGINATION
-   - Only creates pages when items actually require them
-   - No empty "continued" pages
+   LOAD html2pdf.js DYNAMICALLY
 ══════════════════════════════════════════════════════════════ */
+const loadScript = (src, globalKey) =>
+  new Promise((resolve, reject) => {
+    if (window[globalKey]) {
+      resolve(window[globalKey]);
+      return;
+    }
+    const s = document.createElement("script");
+    s.src = src;
+    s.onload = () => resolve(window[globalKey]);
+    s.onerror = reject;
+    document.head.appendChild(s);
+  });
+
+const loadLibraries = () =>
+  Promise.all([
+    loadScript(
+      "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js",
+      "jspdf",
+    ),
+    loadScript(
+      "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js",
+      "html2canvas",
+    ),
+  ]);
+
 /* ══════════════════════════════════════════════════════════════
    BUILD PRINT HTML - ONLY CREATE PAGES WITH ACTUAL CONTENT
 ══════════════════════════════════════════════════════════════ */
@@ -3002,6 +4485,7 @@ const buildPrintHTML = ({
   paidAmount,
   remainingAmount,
   logoB64,
+  logoWhiteB64,
   stampB64,
   sigB64,
 }) => {
@@ -3013,19 +4497,12 @@ const buildPrintHTML = ({
   let pages = [];
 
   if (items.length === 0) {
-    // If no items, create one page with empty state
     pages = [[]];
   } else if (items.length <= FIRST_PAGE_MAX_ITEMS) {
-    // All items fit on first page
     pages = [items];
   } else {
-    // First page with up to FIRST_PAGE_MAX_ITEMS items
     pages.push(items.slice(0, FIRST_PAGE_MAX_ITEMS));
-
-    // Remaining items
     let remainingItems = items.slice(FIRST_PAGE_MAX_ITEMS);
-
-    // Only add subsequent pages if there are remaining items
     while (remainingItems.length > 0) {
       const pageItems = remainingItems.slice(0, NEXT_PAGES_MAX_ITEMS);
       if (pageItems.length > 0) {
@@ -3034,9 +4511,6 @@ const buildPrintHTML = ({
       remainingItems = remainingItems.slice(NEXT_PAGES_MAX_ITEMS);
     }
   }
-
-  // Debug: log pages info
-  console.log(`Total items: ${items.length}, Pages created: ${pages.length}`);
 
   const fmtLocal = (n) =>
     "AED " +
@@ -3056,12 +4530,14 @@ const buildPrintHTML = ({
     ["Purpose of Payment", `Payment received against invoice No. ${invNo}`],
   ];
 
-  const logoBlock = logoB64
-    ? `<img src="${logoB64}" style="height:52px;object-fit:contain;filter:brightness(0) invert(1);-webkit-filter:brightness(0) invert(1);" alt="Amaraa"/>`
-    : `<span style="font-family:'Cormorant Garamond',Georgia,serif;font-size:22px;font-weight:700;letter-spacing:4px;color:#fff;">AMARAA <span style="font-size:9px;letter-spacing:5px;opacity:.6;">JEWELRY</span></span>`;
+  // Use pre-converted white logo (no CSS filter needed - works on all platforms)
+  const logoBlock =
+    logoWhiteB64 || logoB64
+      ? `<img src="${logoWhiteB64 || logoB64}" style="height:52px;object-fit:contain;" alt="Amaraa"/>`
+      : `<span style="font-family:'Cormorant Garamond',Georgia,serif;font-size:22px;font-weight:700;letter-spacing:4px;color:#fff;">AMARAA <span style="font-size:9px;letter-spacing:5px;opacity:.6;">JEWELRY</span></span>`;
 
-  const header = (label, pageNum, totalPages) => `
-    <div style="background:#0D1B4B;padding:18px 28px;display:flex;justify-content:space-between;align-items:center;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
+  const header = (label) => `
+    <div style="background:#0D1B4B;padding:18px 28px;display:flex;justify-content:space-between;align-items:center;">
       ${logoBlock}
       <div style="text-align:right;font-size:11px;color:rgba(255,255,255,.82);">
         <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:15px;letter-spacing:2px;color:#A8B8E8;font-weight:600;margin-bottom:3px;">${label}</div>
@@ -3070,11 +4546,11 @@ const buildPrintHTML = ({
         <div style="font-size:9px;opacity:.55;margin-top:2px;">TRN: ${trn}</div>
       </div>
     </div>
-    <div style="height:3px;background:linear-gradient(90deg,#2B3A7A,#A8B8E8,#2B3A7A);-webkit-print-color-adjust:exact;print-color-adjust:exact;"></div>`;
+    <div style="height:3px;background:linear-gradient(90deg,#2B3A7A,#A8B8E8,#2B3A7A);"></div>`;
 
   const tableHead = () => `
     <thead>
-      <tr style="background:#EEF1FA;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
+      <tr style="background:#EEF1FA;">
         <th style="font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:#2B3A7A;padding:7px 8px;font-weight:600;text-align:left;width:6%;">Sl.</th>
         <th style="font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:#2B3A7A;padding:7px 8px;font-weight:600;text-align:left;width:30%;">Item Name / Code</th>
         <th style="font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:#2B3A7A;padding:7px 8px;font-weight:600;text-align:left;width:8%;">Qty</th>
@@ -3108,9 +4584,9 @@ const buildPrintHTML = ({
     <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:20px;margin-top:18px;flex-wrap:wrap;">
       <div style="flex:1;min-width:250px;">
         <div style="font-size:8px;letter-spacing:2px;text-transform:uppercase;color:#2B3A7A;margin-bottom:4px;">Amount in Words</div>
-        <div style="background:#EEF1FA;border-radius:6px;padding:8px 12px;font-style:italic;font-size:11px;color:#0D1B4B;margin-bottom:10px;-webkit-print-color-adjust:exact;print-color-adjust:exact;">${grandToWords(grand)}</div>
+        <div style="background:#EEF1FA;border-radius:6px;padding:8px 12px;font-style:italic;font-size:11px;color:#0D1B4B;margin-bottom:10px;">${grandToWords(grand)}</div>
         ${notes ? `<div style="font-size:10px;font-style:italic;color:#c00;margin-bottom:10px;">${notes}</div>` : ""}
-        <div style="background:#EEF1FA;border-radius:8px;border:1px solid #C5CDE8;padding:12px 14px;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
+        <div style="background:#EEF1FA;border-radius:8px;border:1px solid #C5CDE8;padding:12px 14px;">
           <div style="font-size:8px;letter-spacing:2px;text-transform:uppercase;color:#2B3A7A;font-weight:700;margin-bottom:8px;">Bank Details</div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px 16px;">
             ${bankDetails
@@ -3125,7 +4601,7 @@ const buildPrintHTML = ({
           </div>
         </div>
       </div>
-      <div style="width:210px;background:#EEF1FA;border-radius:8px;border:1px solid #C5CDE8;padding:12px 14px;font-size:11px;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
+      <div style="width:210px;background:#EEF1FA;border-radius:8px;border:1px solid #C5CDE8;padding:12px 14px;font-size:11px;">
         <div style="display:flex;justify-content:space-between;padding:3px 0;color:#666;"><span>Subtotal</span><span>${fmtLocal(subtotal)}</span></div>
         ${discount > 0 ? `<div style="display:flex;justify-content:space-between;padding:3px 0;color:#666;"><span>Discount</span><span>${fmtLocal(discount)}</span></div>` : ""}
         <div style="display:flex;justify-content:space-between;padding:3px 0;color:#666;"><span>VAT ${vatPct}%</span><span>${fmtLocal(vat)}</span></div>
@@ -3148,7 +4624,7 @@ const buildPrintHTML = ({
     </div>`;
 
   const footerBlock = () => `
-    <div style="background:#EEF1FA;border-top:1px solid #C5CDE8;padding:12px 28px;display:grid;grid-template-columns:1fr 1fr;gap:16px;font-size:10px;color:#666;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
+    <div style="background:#EEF1FA;border-top:1px solid #C5CDE8;padding:12px 28px;display:grid;grid-template-columns:1fr 1fr;gap:16px;font-size:10px;color:#666;">
       <div>
         <div style="font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:#2B3A7A;margin-bottom:3px;">Contact</div>
         Tel: +971 543969425 / +971 521866038<br/>
@@ -3163,16 +4639,12 @@ const buildPrintHTML = ({
       </div>
     </div>`;
 
-  // Only create pages that actually have items
+  // Build each page - only pages with content
   const pagesHTML = pages
-    .filter(
-      (page) => page.length > 0 || (page.length === 0 && pages.length === 1),
-    ) // Filter out empty pages unless it's the only page
     .map((chunk, pageIndex) => {
       const isFirst = pageIndex === 0;
       const isLast = pageIndex === pages.length - 1;
 
-      // Calculate starting serial number correctly
       let startIdx = 0;
       if (pageIndex === 0) {
         startIdx = 0;
@@ -3181,18 +4653,16 @@ const buildPrintHTML = ({
           FIRST_PAGE_MAX_ITEMS + (pageIndex - 1) * NEXT_PAGES_MAX_ITEMS;
       }
 
-      // Only show "Continued" label if there are actually multiple pages
       const label =
         pages.length > 1 && !isFirst
           ? `${invType.toUpperCase()} (Continued)`
           : invType.toUpperCase();
 
-      // Only show "Continued on next page" if this is NOT the last page AND there are more pages
       const showContinued = !isLast && pages.length > 1;
 
       return `
-<div class="page" style="page-break-after: ${isLast ? "auto" : "always"}; break-after: ${isLast ? "auto" : "page"};">
-  ${header(label, pageIndex + 1, pages.length)}
+<div class="page" style="width:794px;background:#fff;font-family:Arial,sans-serif;font-size:12px;color:#333;overflow:hidden;">
+  ${header(label)}
   <div style="padding:18px 28px 20px;">
     ${
       isFirst
@@ -3213,7 +4683,7 @@ const buildPrintHTML = ({
         </div>
       </div>
     </div>
-    <div style="font-size:12px;font-weight:500;color:#2B3A7A;margin-bottom:10px;">✦ Lab Grown Diamonds</div>
+    <div style="font-size:12px;font-weight:500;color:#2B3A7A;margin-bottom:10px;">&#10022; Lab Grown Diamonds</div>
     `
         : ""
     }
@@ -3229,161 +4699,8 @@ const buildPrintHTML = ({
     })
     .join("");
 
-  return `<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no"/>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
-<title>Amaraa Invoice ${invNo}</title>
-<style>
-  * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-  }
-  
-  body {
-    font-family: 'DM Sans', Arial, sans-serif;
-    font-size: 12px;
-    color: #333;
-    background: #fff;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-  }
-  
-  .print-container {
-    width: 100%;
-    max-width: 210mm;
-    margin: 0 auto;
-    background: #fff;
-  }
-  
-  .page {
-    width: 100%;
-    max-width: 210mm;
-    min-height: 297mm;
-    margin: 0 auto;
-    background: #fff;
-    position: relative;
-    page-break-after: always;
-    break-after: page;
-    box-sizing: border-box;
-    overflow-x: hidden;
-  }
-  
-  .page:last-child {
-    page-break-after: auto;
-    break-after: auto;
-  }
-  
-  .page > div {
-    max-width: 100%;
-    overflow-x: hidden;
-  }
-  
-  table {
-    width: 100%;
-    word-wrap: break-word;
-    table-layout: fixed;
-  }
-  
-  td, th {
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-  }
-  
-  @media print {
-    body {
-      margin: 0;
-      padding: 0;
-      background: #fff;
-      width: 100%;
-    }
-    
-    .print-container {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      max-width: 100%;
-    }
-    
-    .page {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      max-width: 100%;
-      page-break-after: always;
-      break-after: page;
-      box-shadow: none;
-    }
-    
-    .page:last-child {
-      page-break-after: auto;
-      break-after: auto;
-    }
-    
-    * {
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-    }
-    
-    /* Hide URL, date, time, page numbers in print */
-    @page {
-      margin: 0;
-      size: A4;
-    }
-    
-    /* Remove default print headers and footers */
-    @page :header {
-      display: none;
-    }
-    
-    @page :footer {
-      display: none;
-    }
-  }
-  
-  @media screen {
-    body {
-      background: #e0e0e0;
-      padding: 20px;
-    }
-    
-    .print-container {
-      box-shadow: 0 0 20px rgba(0,0,0,0.2);
-    }
-    
-    .page {
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      margin-bottom: 20px;
-    }
-  }
-</style>
-</head>
-<body>
-<div class="print-container">
-${pagesHTML}
-</div>
-<script>
-  (function() {
-    setTimeout(function() {
-      window.print();
-      var isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-      if (!isSafari) {
-        setTimeout(function() {
-          window.close();
-        }, 1000);
-      }
-    }, 500);
-  })();
-</script>
-</body>
-</html>`;
+  // Return only inner HTML — no full document wrapper needed for html2pdf DOM injection
+  return pagesHTML;
 };
 
 /* ── UI primitives ── */
@@ -3433,13 +4750,19 @@ export default function AmaraaInvoiceGenerator() {
   const [downloading, setDownloading] = useState(false);
 
   const [logoB64, setLogoB64] = useState("");
+  const [logoWhiteB64, setLogoWhiteB64] = useState(""); // pre-converted white logo for PDF
   const [stampB64, setStampB64] = useState("");
   const [sigB64, setSigB64] = useState("");
 
   /* ── Convert local assets to base64 on mount ── */
   useEffect(() => {
-    toBase64(whitelogoSrc)
-      .then(setLogoB64)
+    toBase64(logoSrc)
+      .then(async (b64) => {
+        setLogoB64(b64);
+        // Also create a white version for PDF (no CSS filter needed)
+        const white = await makeWhiteLogo(b64);
+        setLogoWhiteB64(white);
+      })
       .catch(() => {});
     toBase64(stampSrc)
       .then(setStampB64)
@@ -3478,13 +4801,17 @@ export default function AmaraaInvoiceGenerator() {
     setShowInvoice(false);
   };
 
-  /* ── PDF generation using native print (preserves design perfectly) ── */
-  const downloadPDF = useCallback(() => {
+  /* ── PDF: jsPDF + html2canvas, one canvas per .page div ── */
+  const downloadPDF = useCallback(async () => {
     if (downloading) return;
     setDownloading(true);
 
     try {
-      const html = buildPrintHTML({
+      await loadLibraries();
+      const { jsPDF } = window.jspdf;
+
+      // Build invoice HTML
+      const innerHtml = buildPrintHTML({
         invNo,
         invDate,
         invType,
@@ -3504,34 +4831,70 @@ export default function AmaraaInvoiceGenerator() {
         paidAmount,
         remainingAmount,
         logoB64,
+        logoWhiteB64,
         stampB64,
         sigB64,
       });
 
-      // Create a new window for printing
-      const printWindow = window.open(
-        "",
-        "_blank",
-        "width=800,height=600,toolbar=yes,menubar=yes",
+      // Mount a real visible container so html2canvas can render it
+      const host = document.createElement("div");
+      host.style.cssText =
+        "position:fixed;top:0;left:0;width:794px;height:auto;overflow:visible;" +
+        "z-index:99999;background:#fff;font-family:Arial,sans-serif;font-size:12px;color:#333;";
+      host.innerHTML = innerHtml;
+      document.body.appendChild(host);
+
+      // Give browser time to paint (images + layout)
+      await new Promise((r) =>
+        requestAnimationFrame(() => requestAnimationFrame(r)),
       );
-      if (!printWindow) {
-        alert(
-          "Please allow popups to generate PDF. Check your browser settings.",
-        );
-        setDownloading(false);
-        return;
+      await new Promise((r) => setTimeout(r, 600));
+
+      const pages = host.querySelectorAll(".page");
+      const PAGE_W = 794;
+      const PAGE_H = 1123; // A4 px at 96dpi
+
+      const pdf = new jsPDF({
+        unit: "px",
+        format: [PAGE_W, PAGE_H],
+        orientation: "portrait",
+        compress: true,
+      });
+
+      for (let i = 0; i < pages.length; i++) {
+        const pageEl = pages[i];
+
+        const canvas = await window.html2canvas(pageEl, {
+          scale: 2,
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: "#ffffff",
+          logging: false,
+          scrollX: 0,
+          scrollY: 0,
+          width: PAGE_W,
+          windowWidth: PAGE_W,
+        });
+
+        const imgData = canvas.toDataURL("image/jpeg", 0.98);
+        const imgH = (canvas.height / canvas.width) * PAGE_W;
+
+        if (i > 0) pdf.addPage([PAGE_W, PAGE_H]);
+
+        // If content is taller than one page, scale to fit
+        if (imgH <= PAGE_H) {
+          pdf.addImage(imgData, "JPEG", 0, 0, PAGE_W, imgH);
+        } else {
+          pdf.addImage(imgData, "JPEG", 0, 0, PAGE_W, PAGE_H);
+        }
       }
 
-      printWindow.document.write(html);
-      printWindow.document.close();
-
-      // Clean up
-      setTimeout(() => {
-        setDownloading(false);
-      }, 3000);
-    } catch (error) {
-      console.error("PDF generation failed:", error);
-      alert("Failed to generate PDF. Please try again.");
+      pdf.save(`Amaraa_Invoice_${invNo}.pdf`);
+      document.body.removeChild(host);
+    } catch (err) {
+      console.error("PDF failed:", err);
+      alert("PDF generation failed: " + err.message);
+    } finally {
       setDownloading(false);
     }
   }, [
@@ -3555,11 +4918,10 @@ export default function AmaraaInvoiceGenerator() {
     paidAmount,
     remainingAmount,
     logoB64,
+    logoWhiteB64,
     stampB64,
     sigB64,
   ]);
-
-  // Only create second page if items exceed first page limit
 
   /* ══════════════════════════════ FORM VIEW ══════════════════════════════ */
   if (!showInvoice)
@@ -3921,7 +5283,7 @@ export default function AmaraaInvoiceGenerator() {
                   />
                   <path d="M12 2a10 10 0 0 1 10 10" strokeLinecap="round" />
                 </svg>
-                <span>Preparing PDF…</span>
+                <span>Generating PDF…</span>
               </>
             ) : (
               <>
@@ -4274,7 +5636,7 @@ export default function AmaraaInvoiceGenerator() {
 
       <style>{`
         @media (max-width: 860px)  { .flex.flex-col.items-center.gap-8 > div { transform:scale(0.88); transform-origin:center top; margin-bottom:-60px; } }
-        @media (max-width: 760px)  { .flex.flex-col.items-center.gap-8 > div { transform:scale(0.76); transform-origin:center top; margin-bottom:-120px; } }
+        @media (max-widperth: 760px)  { .flex.flex-col.items-center.gap-8 > div { transform:scale(0.76); transform-origin:center top; margin-bottom:-120px; } }
         @media (max-width: 650px)  { .flex.flex-col.items-center.gap-8 > div { transform:scale(0.64); transform-origin:center top; margin-bottom:-180px; } }
         @media (max-width: 540px)  { .flex.flex-col.items-center.gap-8 > div { transform:scale(0.52); transform-origin:center top; margin-bottom:-240px; } }
         @media (max-width: 430px)  { .flex.flex-col.items-center.gap-8 > div { transform:scale(0.42); transform-origin:center top; margin-bottom:-300px; } }
