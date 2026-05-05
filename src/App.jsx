@@ -139,18 +139,23 @@ const buildPrintHTML = (data) => {
     sigB64,
   } = data;
 
+  const itemCount = items.length;
+  const rowPad =
+    itemCount >= 10 ? "3px 8px" : itemCount >= 5 ? "5px 8px" : "8px 10px";
+  const rowFont = itemCount >= 10 ? "10px" : itemCount >= 5 ? "11px" : "12px";
+
   const rows = items
     .map(
       (it, i) => `
-    <tr>
-      <td style="padding:8px 10px;border-bottom:1px solid #E8ECF5;">${i + 1}</td>
-      <td style="padding:8px 10px;border-bottom:1px solid #E8ECF5;">${it.itemCode || "—"}</td>
-      <td style="padding:8px 10px;border-bottom:1px solid #E8ECF5;text-align:right;">${it.qty}</td>
-      <td style="padding:8px 10px;border-bottom:1px solid #E8ECF5;text-align:right;">${it.GWT || "—"}</td>
-      <td style="padding:8px 10px;border-bottom:1px solid #E8ECF5;text-align:right;">${it.cts || "—"}</td>
-      <td style="padding:8px 10px;border-bottom:1px solid #E8ECF5;text-align:right;">${it.price ? "AED " + Number(it.price).toFixed(2) : "—"}</td>
-      <td style="padding:8px 10px;border-bottom:1px solid #E8ECF5;text-align:right;">${it.price ? "AED " + (it.qty * Number(it.price)).toFixed(2) : "—"}</td>
-    </tr>`,
+  <tr>
+    <td style="padding:${rowPad};border-bottom:1px solid #E8ECF5;font-size:${rowFont};">${i + 1}</td>
+    <td style="padding:${rowPad};border-bottom:1px solid #E8ECF5;font-size:${rowFont};">${it.itemCode || "—"}</td>
+    <td style="padding:${rowPad};border-bottom:1px solid #E8ECF5;text-align:right;font-size:${rowFont};">${it.qty}</td>
+    <td style="padding:${rowPad};border-bottom:1px solid #E8ECF5;text-align:right;font-size:${rowFont};">${it.GWT || "—"}</td>
+    <td style="padding:${rowPad};border-bottom:1px solid #E8ECF5;text-align:right;font-size:${rowFont};">${it.cts || "—"}</td>
+    <td style="padding:${rowPad};border-bottom:1px solid #E8ECF5;text-align:right;font-size:${rowFont};">${it.price ? "AED " + Number(it.price).toFixed(2) : "—"}</td>
+    <td style="padding:${rowPad};border-bottom:1px solid #E8ECF5;text-align:right;font-size:${rowFont};">${it.price ? "AED " + (it.qty * Number(it.price)).toFixed(2) : "—"}</td>
+  </tr>`,
     )
     .join("");
 
@@ -304,22 +309,51 @@ const buildPrintHTML = (data) => {
   // <script>window.onload=()=>setTimeout(()=>window.print(),800);</script>
   // </body></html>`;
   return `<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <meta name="viewport" content="width=900, initial-scale=1.0">
+
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:'DM Sans',sans-serif;background:#fff;padding:20px;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-@media print{body{padding:10mm;}@page{margin:0;size:A4;}}
-  
-  /* High-performance hardware filters to force white inversion on mobile layouts */
-  .mobile-white-logo {
-    filter: brightness(0) invert(1) !important;
-    -webkit-filter: brightness(0) invert(1) !important;
-    backface-visibility: hidden;
-    transform: translateZ(0);
+  html,body{
+    width:900px;
+    margin:0;
+    padding:0;
+    background:#fff;
+    font-family:'DM Sans',sans-serif;
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact;
+  }
+  .invoice-wrap{
+    width:900px;
+    margin:0 auto;
+  }
+  .mobile-white-logo{
+    filter:brightness(0) invert(1) !important;
+    -webkit-filter:brightness(0) invert(1) !important;
+  }
+  @media print{
+    html,body{
+      width:100% !important;
+      margin:0 !important;
+      padding:0 !important;
+      overflow:visible !important;
+    }
+    @page{
+      size:A4 portrait;
+      margin:0;
+    }
+    .invoice-wrap{
+      width:100% !important;
+      transform:none !important;
+    }
+    /* Only allow page break after 10 items */
+    .page-break-row{
+      page-break-before:always;
+    }
   }
 </style>
 </head><body>
-<div style="border:1px solid #C5CDE8;border-radius:12px;overflow:hidden;max-width:900px;margin:auto;">
+<div class="invoice-wrap" style="border:1px solid #C5CDE8;border-radius:12px;overflow:hidden;max-width:900px;margin:auto;">
 
   <div style="background:#0D1B4B;color:#ffffff;padding:24px 28px;display:flex;justify-content:space-between;align-items:center;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
   
@@ -357,7 +391,7 @@ const buildPrintHTML = (data) => {
       <div>
         <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#2B3A7A;margin-bottom:5px;">From</div>
         <div style="font-size:14px;font-weight:500;color:#0D1B4B;">Amaraa FZCO</div>
-        <div style="font-size:12px;color:#555;margin-top:2px;line-height:1.6;">Almas 25-J-04, Almas Tower<br>JLT-PH1-A0, Jumeirah Lake Towers<br>Dubai, United Arab Emirates<br>Tel: +971 543969425 | +971 521866038<br>info@amaraa.com · www.amaraa.com <br/> BH CODE   7113.19</div>
+        <div style="font-size:12px;color:#555;margin-top:2px;line-height:1.6;">Almas 25-J-04, Almas Tower<br>JLT-PH1-A0, Jumeirah Lake Towers<br>Dubai, United Arab Emirates<br>Tel: +971 543969425 | +971 521866038<br>info@amaraa.com · www.amaraa.com <br/> HS CODE   7113.19</div>
       </div>
       <div>
         <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#2B3A7A;margin-bottom:5px;">To</div>
@@ -387,8 +421,7 @@ const buildPrintHTML = (data) => {
       <div style="flex:1; min-width:280px;">
         <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#2B3A7A;margin-bottom:4px;">Amount in Words</div>
         <div style="background:#EEF1FA;border-radius:6px;padding:8px 12px;font-style:italic;font-size:12px;color:#0D1B4B;margin-bottom:14px;">${grandToWords(grand)}</div>
-        ${notes ? `<div style="font-size:11px;color:#888;font-style:italic;margin-top:4px;margin-bottom:12px;">${notes}</div>` : ""}
-        
+${notes ? '<div style="font-size:11px;font-style:italic;margin-top:4px;margin-bottom:12px;color:#FF0000;">' + notes + "</div>" : ""}        
         <div style="padding:12px 14px;background:#EEF1FA;border-radius:8px;border:1px solid #C5CDE8;">
           <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#2B3A7A;margin-bottom:6px;font-weight:600;">Bank Details</div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 16px;font-size:11px;color:#333;">
@@ -439,10 +472,42 @@ const buildPrintHTML = (data) => {
   </div>
 </div>
 <script>
-window.onload = () => {
-  setTimeout(() => {
+window.onload = function() {
+  setTimeout(function() {
+    var wrap = document.querySelector('.invoice-wrap');
+    if (!wrap) { window.print(); return; }
+
+    var A4_H = 1123; // A4 height px at 96dpi
+    var contentH = wrap.scrollHeight;
+    var itemCount = ${itemCount}; // injected from JS
+
+    // If 10 or fewer items, force everything onto one page by scaling
+    if (itemCount <= 10) {
+      var screenW = window.innerWidth || document.documentElement.clientWidth;
+      var designW = 900;
+      var scaleByW = screenW / designW;
+
+      // Check if content fits in A4 height after width scaling
+      var scaledH = contentH * scaleByW;
+      var finalScale = scaledH > A4_H ? (A4_H / contentH) : scaleByW;
+
+      wrap.style.transformOrigin = 'top left';
+      wrap.style.transform = 'scale(' + finalScale + ')';
+      wrap.style.marginBottom = '-' + (contentH * (1 - finalScale)) + 'px';
+      document.body.style.width = (designW * finalScale) + 'px';
+      document.body.style.overflow = 'hidden';
+    } else {
+      // More than 10 items — allow natural multi-page flow
+      var screenW = window.innerWidth || document.documentElement.clientWidth;
+      var scale = screenW / 900;
+      wrap.style.transformOrigin = 'top left';
+      wrap.style.transform = 'scale(' + scale + ')';
+      wrap.style.marginBottom = '-' + (contentH * (1 - scale)) + 'px';
+      document.body.style.width = (900 * scale) + 'px';
+    }
+
     window.print();
-  }, 800);
+  }, 1200);
 };
 </script></body></html>`;
 };
@@ -1099,7 +1164,7 @@ export default function AmaraaInvoiceGenerator() {
                   {grandToWords(grand)}
                 </div>
                 {notes && (
-                  <div className="text-[11px] text-gray-400 italic mt-2">
+                  <div className="text-[11px] italic mt-2 text-[#FF0000]">
                     {notes}
                   </div>
                 )}
