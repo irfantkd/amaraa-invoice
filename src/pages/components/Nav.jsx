@@ -57,7 +57,7 @@ export default function Nav() {
 
       <nav
         className={`
-          w-full sticky top-0 z-[9999]
+          w-full 
           transition-all duration-500 ease-in-out
           ${
             scrolled
