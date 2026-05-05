@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import logo from "../../assets/images/logo.png";
 import BG_URL from "../../assets/images/bgimg.jpg";
-const VALID_EMAIL = "modassar@amaraa.com";
-const VALID_PASSWORD = "modassar#12$";
+const VALID_EMAIL = "kaia@amaraa.com";
+const VALID_PASSWORD = "Kaia@1";
 const AUTH_TOKEN = "fadfasder445$%^&Uhhf";
 
 const Diamond = ({ color = "#c9a84c", op = 0.6 }) => (
