@@ -4490,7 +4490,7 @@ const buildPrintHTML = ({
   sigB64,
 }) => {
   /* ── DYNAMIC PAGINATION - ONLY CREATE PAGES WITH ITEMS ── */
-  const FIRST_PAGE_MAX_ITEMS = 10;
+  const FIRST_PAGE_MAX_ITEMS = 20;
   const NEXT_PAGES_MAX_ITEMS = 18;
 
   // Calculate pages - only create pages that have items
